@@ -1,0 +1,499 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Estudos — Cálculo Diferencial e Integral I | Unicesumar</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        :root {
+            --primaria: #003366;
+            --secundaria: #009933;
+            --alerta: #cc0000;
+            --destaque: #0066cc;
+            --dica: #9966cc;
+            --resolucao: #cc6600;
+            --fundo: #f0f4f8;
+            --branco: #ffffff;
+            --sombra: 0 4px 16px rgba(0,0,0,0.12);
+            --cinza: #e0e0e0;
+        }
+        body { background: var(--fundo); min-height: 100vh; padding-bottom: 3rem; }
+        .cabecalho { background: linear-gradient(135deg, var(--primaria), #004d99); color: white; padding: 2rem; text-align: center; }
+        .cabecalho h1 { font-size: 1.6rem; margin-bottom: 0.3rem; }
+        .cabecalho p { opacity: 0.9; font-size: 1rem; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+        .painel { background: var(--branco); border-radius: 12px; padding: 2rem; margin-bottom: 1.5rem; box-shadow: var(--sombra); }
+        .painel h2 { color: var(--primaria); margin-bottom: 1rem; border-bottom: 2px solid var(--destaque); padding-bottom: 0.5rem; }
+        
+        .estatisticas { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+        .card-estat { background: linear-gradient(135deg, var(--primaria), var(--destaque)); color: white; padding: 1.2rem; border-radius: 10px; text-align: center; }
+        .card-estat h3 { font-size: 1.8rem; margin-bottom: 0.2rem; }
+        .barra-progresso { height: 28px; background: var(--cinza); border-radius: 14px; overflow: hidden; margin: 1rem 0; }
+        .progresso { height: 100%; background: linear-gradient(90deg, var(--destaque), var(--secundaria)); width: 0%; transition: width 0.5s ease; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9rem; }
+        
+        .nivel { display: flex; align-items: flex-start; gap: 1rem; margin: 1rem 0; padding: 1rem; border-radius: 10px; background: #f9fbfc; border-left: 4px solid var(--cinza); flex-wrap: wrap; }
+        .nivel.ativo { border-left-color: var(--destaque); background: #eaf4ff; }
+        .nivel.completo { border-left-color: var(--secundaria); background: #eaf9ee; }
+        .nivel.bloqueado { opacity: 0.6; background: #f0f0f0; }
+        .badge { padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: bold; font-size: 0.85rem; flex-shrink: 0; }
+        .badge.atual { background: var(--destaque); color: white; }
+        .badge.feito { background: var(--secundaria); color: white; }
+        .badge.trancado { background: #999; color: white; }
+        .nivel-info { flex: 1; min-width: 250px; }
+        .nivel-acao { flex-shrink: 0; }
+        
+        .questao { margin: 1.5rem 0; padding: 1.5rem; background: #f0f7ff; border-radius: 10px; border-left: 4px solid var(--destaque); }
+        .questao h4 { margin-bottom: 1rem; color: var(--primaria); }
+        .alternativa { display: block; padding: 0.9rem 1rem; margin: 0.6rem 0; border-radius: 8px; cursor: pointer; transition: all 0.25s ease; border: 2px solid transparent; background: white; }
+        .alternativa:hover { border-color: var(--destaque); background: #e6f2ff; }
+        .alternativa.selecionada { border-color: var(--destaque); background: #cce4ff; }
+        .alternativa.correta { border-color: var(--secundaria); background: #d4edda !important; color: #155724; font-weight: 500; }
+        .alternativa.errada { border-color: var(--alerta); background: #f8d7da !important; color: #721c24; }
+        
+        .botao-dica { background: var(--dica); color: white; border: none; padding: 0.7rem 1.2rem; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 1rem 0.5rem 1rem 0; transition: 0.3s; }
+        .botao-dica:hover { background: #8040cc; transform: translateY(-2px); }
+        .botao-resolucao { background: var(--resolucao); color: white; border: none; padding: 0.7rem 1.2rem; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 1rem 0.5rem 1rem 0; transition: 0.3s; }
+        .botao-resolucao:hover { background: #b35900; transform: translateY(-2px); }
+        
+        .caixa-dica { background: #f3efff; border-left: 4px solid var(--dica); padding: 1rem 1.2rem; border-radius: 8px; margin: 1rem 0; display: none; }
+        .caixa-dica strong { color: var(--dica); }
+        .caixa-resolucao { background: #fff3e6; border-left: 4px solid var(--resolucao); padding: 1.2rem; border-radius: 8px; margin: 1rem 0; display: none; line-height: 1.8; }
+        .caixa-resolucao strong { color: var(--resolucao); }
+        .passo { margin: 0.6rem 0; }
+        .passo-num { font-weight: bold; color: var(--resolucao); display: inline-block; min-width: 24px; }
+        
+        .botoes { display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap; align-items: center; }
+        button { padding: 0.9rem 2rem; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .btn-primario { background: var(--destaque); color: white; }
+        .btn-prim
+        .btn-primario:hover { background: #0052cc; transform: translateY(-2px); }
+        .btn-sucesso { background: var(--secundaria); color: white; }
+        .btn-sucesso:hover { background: #007a29; }
+        .btn-voltar { background: #666; color: white; }
+        .btn-voltar:hover { background: #444; }
+        .btn-perigo { background: var(--alerta); color: white; padding: 0.5rem 1rem; font-size: 0.9rem; }
+        
+        .explicacao { margin-top: 1.2rem; padding: 1.2rem; background: #e8f5e9; border-radius: 8px; border-left: 4px solid var(--secundaria); display: none; }
+        .explicacao strong { color: var(--secundaria); }
+        
+        .grafico-container { position: relative; height: 320px; margin: 1rem 0; }
+        .progresso-nivel { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.8rem 0; }
+        .bolinha { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #ccc; transition: all 0.2s; }
+        .bolinha.feita { background: var(--secundaria); border-color: var(--secundaria); }
+        .bolinha.erro { background: var(--alerta); border-color: var(--alerta); }
+        .bolinha.pendente { background: white; }
+        
+        .aviso { background: #fff3cd; padding: 1rem; border-radius: 8px; border-left: 4px solid #ffc107; margin-bottom: 1.5rem; }
+        .oculto { display: none !important; }
+    </style>
+</head>
+<body>
+    <header class="cabecalho">
+        <h1>📘 Cálculo Diferencial e Integral I — Unicesumar</h1>
+        <p>Engenharia Mecânica · 1º Ano · Plano de Estudos Completo</p>
+    </header>
+
+    <div class="container">
+        <div class="painel">
+            <h2>📊 Seu Desempenho</h2>
+            <div class="estatisticas">
+                <div class="card-estat">
+                    <h3 id="nivelAtual">1</h3>
+                    <p>Nível Liberado</p>
+                </div>
+                <div class="card-estat">
+                    <h3 id="acertos">0</h3>
+                    <p>Acertos</p>
+                </div>
+                <div class="card-estat">
+                    <h3 id="totalQ">0</h3>
+                    <p>Questões Feitas</p>
+                </div>
+                <div class="card-estat">
+                    <h3 id="porc">0%</h3>
+                    <p>Aproveitamento</p>
+                </div>
+            </div>
+            <div class="barra-progresso">
+                <div class="progresso" id="barra">0%</div>
+            </div>
+            <p id="textoBarra">0 de 45 questões concluídas</p>
+            <button class="btn-perigo" style="margin-top:1rem;" onclick="confirmarReset()">🔄 Resetar Progresso</button>
+        </div>
+
+        <div class="painel">
+            <h2>📈 Desempenho por Nível</h2>
+            <div class="grafico-container">
+                <canvas id="grafico"></canvas>
+            </div>
+        </div>
+
+        <div class="painel" id="painelNiveis">
+            <h2>📚 Níveis de Estudo</h2>
+            <p class="aviso">💡 Estude em ordem! Avance ao obter no mínimo 60% de acerto em cada nível. Seu progresso é salvo automaticamente.</p>
+            <div id="listaNiveis"></div>
+        </div>
+
+        <div class="painel oculto" id="areaQuestao">
+            <h2 id="tituloNivel"></h2>
+            <div class="progresso-nivel" id="bolinhasNivel"></div>
+            <hr style="margin: 1rem 0; border: none; border-top: 1px solid #ddd;">
+            
+            <div id="conteudoQuestao"></div>
+            
+            <div class="botoes">
+                <button type="button" class="botao-dica" id="btnDica" onclick="mostrarDica()">💡 Ver Dica</button>
+                <button type="button" class="botao-resolucao oculto" id="btnResolucao" onclick="mostrarResolucao()">📝 Ver Resolução Completa</button>
+            </div>
+            
+            <div class="caixa-dica" id="caixaDica"></div>
+            <div class="caixa-resolucao" id="caixaResolucao"></div>
+            
+            <div class="botoes">
+                <button class="btn-primario" id="btnVerificar" onclick="verificar()">Verificar Resposta</button>
+                <button class="btn-sucesso oculto" id="btnProximo" onclick="proxima()">Próxima Questão →</button>
+                <button class="btn-voltar" onclick="voltarMenu()">Voltar aos Níveis</button>
+            </div>
+            <div class="explicacao" id="caixaExp"></div>
+        </div>
+    </div>
+
+    <script>
+        const NIVEIS = [
+            {
+                id: 1,
+                nome: "Nível 1 — Números e Funções Reais",
+                tema: "Conjuntos numéricos, intervalos, funções: domínio, imagem, composição, inversa, exponenciais e logarítmicas",
+                questoes: [
+                    {
+                        pergunta: "Considere f(x) = √(x² - 4). O domínio de f é:",
+                        alternativas: ["-2 < x < 2", "x ≤ -2 ou x ≥ 2", "-4 ≤ x ≤ 4", "x > 2", "Todo ℝ"],
+                        correta: 1,
+                        dica: "💡 Lembre-se: o que está DENTRO da raiz quadrada NÃO pode ser negativo. Escreva a desigualdade: x² - 4 ≥ 0",
+                        resolucao: `<strong>Passo a Passo:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> Para existir raiz real: x² - 4 ≥ 0</div>
+                            <div class="passo"><span class="passo-num">2.</span> x² ≥ 4 → |x| ≥ 2</div>
+                            <div class="passo"><span class="passo-num">3.</span> Ou seja: x ≤ -2 OU x ≥ 2</div>
+                            <div class="passo"><strong>✅ Resposta: Alternativa B</strong></div>`,
+                        explicacao: "x² - 4 ≥ 0 → x ≤ -2 ou x ≥ 2."
+                    },
+                    {
+                        pergunta: "f(x) = x² e g(x) = x - 1. f∘g(x) =",
+                        alternativas: ["x² - 1", "(x - 1)²", "x² + 1", "x² - 2x", "x - x²"],
+                        correta: 1,
+                        dica: "💡 Composição f∘g(x) = f(g(x)). Substitua g(x) no lugar de x na função f.",
+                        resolucao: `<strong>Passo a Passo:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> f∘g(x) = f(g(x))</div>
+                            <div class="passo"><span class="passo-num">2.</span> f(z) = z² → z = g(x) = x - 1</div>
+                            <div class="passo"><span class="passo-num">3.</span> f(g(x)) = (x - 1)²</div>
+                            <div class="passo"><strong>✅ Resposta: Alternativa B</strong></div>`,
+                        explicacao: "f(g(x)) = (x - 1)² = x² - 2x + 1."
+                    },
+                    {
+                        pergunta: "Qual é função ímpar?",
+                        alternativas: ["x² + 1", "5", "x³", "|x|", "2x²"],
+                        correta: 2,
+                        dica: "💡 Função ímpar: f(-x) = -f(x). Troque x por -x e veja se o sinal muda todo.",
+                        resolucao: `<strong>Passo a Passo:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> f(x) = x³ → f(-x) = (-x)³ = -x³</div>
+                            <div class="passo"><span class="passo-num">2.</span> f(-x) = -f(x) ✅ cumpre a regra</div>
+                            <div class="passo"><strong>✅ Resposta: Alternativa C</strong></div>`,
+                        explicacao: "(-x)³ = -x³ = -f(x)."
+                    },
+                    {
+                        pergunta: "Sobre f(x) = aˣ (a > 0, a ≠ 1), é correto:",
+                        alternativas: ["Sempre decrescente", "Domínio x > 0", "Passa em (0, 1)", "Sem imagem para x negativo", "Sempre < 1"],
+                        correta: 2,
+                        dica: "💡 Toda base elevada a zero dá 1! Teste x = 0.",
+                        resolucao: `<strong>Passo a Passo:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> f(0) = a⁰ = 1</div>
+                            <div class="passo"><span class="passo-num">2.</span> O gráfico SEMPRE passa por (0, 1)</div>
+                            <div class="passo"><strong>✅ Resposta: Alternativa C</strong></div>`,
+                        explicacao: "a⁰ = 1 → ponto (0, 1)."
+                    },
+                    {
+                        pergunta: "Inversa de f(x) = 2x + 3 é:",
+                        alternativas: ["(x - 3)/2", "2x - 3", "1/(2x+3)", "(x+3)/2", "x/2 - 3"],
+                        correta: 0,
+                        dica: "💡 Troque x por y e isole y! x = 2y + 3",
+                        resolucao: `<strong>Passo a Passo:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> y = 2x + 3 → troque: x = 2y + 3</div>
+                            <div class="passo"><span class="passo-num">2.</span> x - 3 = 2y → y = (x - 3)/2</div>
+                            <div class="passo"><strong>✅ Resposta: Alternativa A</strong></div>`,
+                        explicacao: "y = (x - 3)/2."
+                    }
+                ]
+            }
+        ];
+
+        let estado = {
+            nivelLiberado: 1,
+            nivelAtual: null,
+            indiceQuestao: 0,
+            acertosTotais: 0,
+            totalQuestoes: 0,
+            historico: {},
+            respostaEscolhida: null
+        };
+
+        let grafico = null;
+
+        function salvarEstado() {
+            localStorage.setItem('calculoEstado', JSON.stringify(estado));
+        }
+
+        function carregarEstado() {
+            const salvo = localStorage.getItem('calculoEstado');
+            if (salvo) {
+                const dados = JSON.parse(salvo);
+                estado = { ...estado, ...dados };
+            }
+            NIVEIS.forEach(n => {
+                if (!estado.historico[n.id]) {
+                    estado.historico[n.id] = { acertos: 0, total: 0, detalhes: [] };
+                }
+            });
+        }
+
+        function confirmarReset() {
+            if (confirm('Tem certeza? Isso apaga TODO o seu progresso!')) {
+                localStorage.removeItem('calculoEstado');
+                location.reload();
+            }
+        }
+
+        function inicializarGrafico() {
+            const ctx = document.getElementById('grafico').getContext('2d');
+            grafico = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: NIVEIS.map(n => `N${n.id}`),
+                    datasets: [{
+                        label: '% de Acerto',
+                        data: NIVEIS.map(n => {
+                            const h = estado.historico[n.id];
+                            if (!h || h.total === 0) return 0;
+                            return Math.round((h.acertos / h.total) * 100);
+                        }),
+                        backgroundColor: NIVEIS.map(n => {
+                            const h = estado.historico[n.id];
+                            if (!h || h.total === 0) return '#ddd';
+                            return ((h.acertos/h.total)*100) >= 60 ? '#009933' : '#f5a623';
+                        }),
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        function atualizarGrafico() {
+            if (!grafico) return;
+            grafico.data.datasets[0].data = NIVEIS.map(n => {
+                const h = estado.historico[n.id];
+                if (!h || h.total === 0) return 0;
+                return Math.round((h.acertos / h.total) * 100);
+            });
+            grafico.update();
+        }
+
+        function atualizarEstatisticas() {
+            const concluidas = Object.values(estado.historico).reduce((s,h) => s + (h.total||0), 0);
+            const total = NIVEIS.length * 5;
+            const porc = estado.totalQuestoes > 0 ? Math.round((estado.acertosTotais / estado.totalQuestoes) * 100) : 0;
+            
+            document.getElementById('nivelAtual').textContent = estado.nivelLiberado;
+            document.getElementById('acertos').textContent = estado.acertosTotais;
+            document.getElementById('totalQ').textContent = estado.totalQuestoes;
+            document.getElementById('porc').textContent = porc + '%';
+            document.getElementById('barra').style.width = `${(concluidas/total)*100}%`;
+            document.getElementById('barra').textContent = `${Math.round((concluidas/total)*100)}%`;
+            document.getElementById('textoBarra').textContent = `${concluidas} de ${total} questões concluídas`;
+        }
+
+        function renderizarNiveis() {
+            const container = document.getElementById('listaNiveis');
+            container.innerHTML = '';
+            NIVEIS.forEach(n => {
+                const h = estado.historico[n.id];
+                const p = h && h.total > 0 ? Math.round((h.acertos/h.total)*100) : 0;
+                const liberado = n.id <= estado.nivelLiberado;
+                let classe = liberado ? (p >= 60 ? 'completo' : 'ativo') : 'bloqueado';
+                let rotulo = !liberado ? '🔒 Trancado' : (p >= 60 ? `✅ ${p}% — Concluído` : (p > 0 ? `📖 ${p}% — Em andamento` : '📖 Iniciar'));
+                let badgeClasse = !liberado ? 'trancado' : (p >= 60 ? 'feito' : 'atual');
+                
+                container.innerHTML += `
+                    <div class="nivel ${classe}">
+                        <span class="badge ${badgeClasse}">Nível ${n.id}</span>
+                        <div class="nivel-info">
+                            <strong>${n.nome.split(' — ')[1]}</strong><br>
+                            <small>${n.tema}</small><br>
+                            <span style="color:${p>=60?'#009933':p>0?'#f5a623':'#888'}">${rotulo}</span>
+                        </div>
+                        <div class="nivel-acao">
+                            ${liberado ? `<button class="btn-primario" onclick="iniciar(${n.id})">Estudar</button>` : ''}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function iniciar(id) {
+            estado.nivelAtual = id;
+            estado.indiceQuestao = 0;
+            estado.respostaEscolhida = null;
+            if (!estado.historico[id]) estado.historico[id] = { acertos: 0, total: 0, detalhes: [] };
+            
+            document.getElementById('painelNiveis').classList.add('oculto');
+            document.getElementById('areaQuestao').classList.remove('oculto');
+            document.getElementById('tituloNivel').textContent = NIVEIS[id-1].nome;
+            renderizarBolinhas();
+            carregarQuestao();
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        function voltarMenu() {
+            document.getElementById('painelNiveis').classList.remove('oculto');
+            document.getElementById('areaQuestao').classList.add('oculto');
+            renderizarNiveis();
+            atualizarEstatisticas();
+            atualizarGrafico();
+            salvarEstado();
+        }
+
+        function renderizarBolinhas() {
+            const container = document.getElementById('bolinhasNivel');
+            container.innerHTML = '';
+            const h = estado.historico[estado.nivelAtual];
+            NIVEIS[estado.nivelAtual-1].questoes.forEach((_, i) => {
+                let classe = 'pendente';
+                if (h && h.detalhes && h.detalhes[i] !== undefined) {
+                    classe = h.detalhes[i] ? 'feita' : 'erro';
+                }
+                container.innerHTML += `<div class="bolinha ${classe}"></div>`;
+            });
+        }
+
+        function carregarQuestao() {
+            const q = NIVEIS[estado.nivelAtual - 1].questoes[estado.indiceQuestao];
+            estado.respostaEscolhida = null;
+            
+            // Reset de tela
+            document.getElementById('btnVerificar').classList.remove('oculto');
+            document.getElementById('btnProximo').classList.add('oculto');
+            document.getElementById('btnResolucao').classList.add('oculto');
+            document.getElementById('caixaDica').style.display = 'none';
+            document.getElementById('caixaResolucao').style.display = 'none';
+            document.getElementById('caixaExp').style.display = 'none';
+            
+            // Renderiza questão
+            document.getElementById('conteudoQuestao').innerHTML = `
+                <div class="questao">
+                    <h4>Questão ${estado.indiceQuestao + 1} de 5</h4>
+                    <p style="margin:1rem 0; font-size:1.05rem; line-height:1.6;">${q.pergunta}</p>
+                    ${q.alternativas.map((alt, i) => `
+                        <label class="alternativa" id="alt-${i}" onclick="selecionar(${i})">
+                            <input type="radio" name="resposta" style="margin-right:0.5rem;">
+                            ${String.fromCharCode(65 + i)}) ${alt}
+                        </label>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        function selecionar(i) {
+            estado.respostaEscolhida = i;
+            document.querySelectorAll('.alternativa').forEach(el => el.classList.remove('selecionada'));
+            document.getElementById(`alt-${i}`).classList.add('selecionada');
+        }
+
+        function mostrarDica() {
+            const q = NIVEIS[estado.nivelAtual - 1].questoes[estado.indiceQuestao];
+            const caixa = document.getElementById('caixaDica');
+            caixa.innerHTML = `<strong>💡 Dica:</strong> ${q.dica}`;
+            caixa.style.display = caixa.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function mostrarResolucao() {
+            const q = NIVEIS[estado.nivelAtual - 1].questoes[estado.indiceQuestao];
+            const caixa = document.getElementById('caixaResolucao');
+            caixa.innerHTML = q.resolucao;
+            caixa.style.display = caixa.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function verificar() {
+            if (estado.respostaEscolhida === null) { 
+                alert('Selecione uma alternativa!'); 
+                return; 
+            }
+            
+            const q = NIVEIS[estado.nivelAtual - 1].questoes[estado.indiceQuestao];
+            const acertou = estado.respostaEscolhida === q.correta;
+            
+            estado.totalQuestoes++;
+            estado.historico[estado.nivelAtual].total++;
+            estado.historico[estado.nivelAtual].detalhes[estado.indiceQuestao] = acertou;
+            if (acertou) estado.acertosTotais++;
+            estado.historico[estado.nivelAtual].acertos = estado.historico[estado.nivelAtual].acertosTotais || 
+                estado.historico[estado.nivelAtual].detalhes.filter(Boolean).length;
+            
+            salvarEstado();
+            
+            document.querySelectorAll('.alternativa').forEach((el, i) => {
+                el.style.pointerEvents = 'none';
+                if (i === q.correta) el.classList.add('correta');
+                else if (i === estado.respostaEscolhida && !acertou) el.classList.add('errada');
+            });
+            
+            document.getElementById('caixaExp').style.display = 'block';
+            document.getElementById('caixaExp').innerHTML = `<strong>${acertou?'✅ Correto!':'❌ Errou'}</strong><br>${q.explicacao}`;
+            
+            document.getElementById('btnResolucao').classList.remove('oculto');
+            document.getElementById('btnVerificar').classList.add('oculto');
+            
+            if (estado.indiceQuestao + 1 >= NIVEIS[estado.nivelAtual - 1].questoes.length) {
+                const h = estado.historico[estado.nivelAtual];
+                const aproveitamento = Math.round((h.acertos/h.total)*100);
+                document.getElementById('btnProximo').textContent = 'Ver Resultado';
+                document.getElementById('btnProximo').classList.remove('oculto');
+                
+                setTimeout(() => {
+                    if (aproveitamento >= 60 && estado.nivelAtual === estado.nivelLiberado) {
+                        estado.nivelLiberado++;
+                        salvarEstado();
+                        alert(`🎉 Parabéns! Você fez ${aproveitamento}%!\nNível ${estado.nivelLiberado} desbloqueado!`);
+                    } else if (aproveitamento < 60) {
+                        alert(`📊 Você fez ${aproveitamento}%.\nPrecisa de pelo menos 60% para avançar!`);
+                    }
+                }, 500);
+            } else {
+                document.getElementById('btnProximo').classList.remove('oculto');
+            }
+            
+            atualizarEstatisticas();
+            atualizarGrafico();
+        }
+
+        function proxima() {
+            estado.indiceQuestao++;
+            renderizarBolinhas();
+            carregarQuestao();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            carregarEstado();
+            inicializarGrafico();
+            renderizarNiveis();
+            atualizarEstatisticas();
+            atualizarGrafico();
+        });
+    </script>
+</body>
+</html>
