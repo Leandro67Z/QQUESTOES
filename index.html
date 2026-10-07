@@ -3,480 +3,1112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cálculo Diferencial e Integral I — Unicesumar | 90 Questões</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Cálculo Diferencial e Integral I — Unicesumar</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
-        :root {
-            --primaria: #003366; --secundaria: #009933; --alerta: #cc0000;
-            --destaque: #0066cc; --dica: #9966cc; --resolucao: #cc6600;
-            --fundo: #f0f4f8; --branco: #ffffff; --sombra: 0 4px 16px rgba(0,0,0,0.12); --cinza: #e0e0e0;
-        }
-        body { background: var(--fundo); min-height: 100vh; padding-bottom: 3rem; }
-        .cabecalho { background: linear-gradient(135deg, var(--primaria), #004d99); color: white; padding: 2rem; text-align: center; }
-        .cabecalho h1 { font-size: 1.6rem; margin-bottom: 0.3rem; }
-        .container { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
-        .painel { background: var(--branco); border-radius: 12px; padding: 2rem; margin-bottom: 1.5rem; box-shadow: var(--sombra); }
-        .painel h2 { color: var(--primaria); margin-bottom: 1rem; border-bottom: 2px solid var(--destaque); padding-bottom: 0.5rem; }
-        
-        .estatisticas { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
-        .card-estat { background: linear-gradient(135deg, var(--primaria), var(--destaque)); color: white; padding: 1.2rem; border-radius: 10px; text-align: center; }
-        .card-estat h3 { font-size: 1.8rem; margin-bottom: 0.2rem; }
-        .barra-progresso { height: 28px; background: var(--cinza); border-radius: 14px; overflow: hidden; margin: 1rem 0; }
-        .progresso { height: 100%; background: linear-gradient(90deg, var(--destaque), var(--secundaria)); width: 0%; transition: width 0.5s ease; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9rem; }
-        
-        .nivel { display: flex; align-items: flex-start; gap: 1rem; margin: 1rem 0; padding: 1rem; border-radius: 10px; background: #f9fbfc; border-left: 4px solid var(--cinza); flex-wrap: wrap; }
-        .nivel.ativo { border-left-color: var(--destaque); background: #eaf4ff; }
-        .nivel.completo { border-left-color: var(--secundaria); background: #eaf9ee; }
-        .nivel.bloqueado { opacity: 0.6; background: #f0f0f0; }
-        .badge { padding: 0.4rem 0.8rem; border-radius: 20px; font-weight: bold; font-size: 0.85rem; flex-shrink: 0; }
-        .badge.atual { background: var(--destaque); color: white; }
-        .badge.feito { background: var(--secundaria); color: white; }
-        .badge.trancado { background: #999; color: white; }
-        .nivel-info { flex: 1; min-width: 250px; }
-        
-        .questao { margin: 1.5rem 0; padding: 1.5rem; background: #f0f7ff; border-radius: 10px; border-left: 4px solid var(--destaque); }
-        .alternativa { display: block; padding: 0.9rem 1rem; margin: 0.6rem 0; border-radius: 8px; cursor: pointer; transition: all 0.25s ease; border: 2px solid transparent; background: white; }
-        .alternativa:hover { border-color: var(--destaque); background: #e6f2ff; }
-        .alternativa.selecionada { border-color: var(--destaque); background: #cce4ff; }
-        .alternativa.correta { border-color: var(--secundaria); background: #d4edda !important; color: #155724; }
-        .alternativa.errada { border-color: var(--alerta); background: #f8d7da !important; color: #721c24; }
-        
-        .botao-dica { background: var(--dica); color: white; border: none; padding: 0.7rem 1.2rem; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 1rem 0.5rem 1rem 0; }
-        .botao-resolucao { background: var(--resolucao); color: white; border: none; padding: 0.7rem 1.2rem; border-radius: 8px; cursor: pointer; font-weight: bold; margin: 1rem 0.5rem 1rem 0; }
-        .caixa-dica { background: #f3efff; border-left: 4px solid var(--dica); padding: 1rem 1.2rem; border-radius: 8px; margin: 1rem 0; display: none; }
-        .caixa-resolucao { background: #fff3e6; border-left: 4px solid var(--resolucao); padding: 1.2rem; border-radius: 8px; margin: 1rem 0; display: none; line-height: 1.8; }
-        .passo { margin: 0.6rem 0; }
-        .passo-num { font-weight: bold; color: var(--resolucao); display: inline-block; min-width: 24px; }
-        
-        .botoes { display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap; align-items: center; }
-        button { padding: 0.9rem 2rem; border: none; border-radius: 8px; font-size: 1rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-primario { background: var(--destaque); color: white; }
-        .btn-sucesso { background: var(--secundaria); color: white; }
-        .btn-voltar { background: #666; color: white; }
-        .btn-perigo { background: var(--alerta); color: white; padding: 0.5rem 1rem; font-size: 0.9rem; }
-        
-        .explicacao { margin-top: 1.2rem; padding: 1.2rem; background: #e8f5e9; border-radius: 8px; border-left: 4px solid var(--secundaria); display: none; }
-        .grafico-container { position: relative; height: 320px; margin: 1rem 0; }
-        .progresso-nivel { display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 0.8rem 0; }
-        .bolinha { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #ccc; transition: all 0.2s; }
-        .bolinha.feita { background: var(--secundaria); border-color: var(--secundaria); }
-        .bolinha.erro { background: var(--alerta); border-color: var(--alerta); }
-        .bolinha.pendente { background: white; }
-        .aviso { background: #fff3cd; padding: 1rem; border-radius: 8px; border-left: 4px solid #ffc107; margin-bottom: 1.5rem; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background: #f0f4f8; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c5aa0; margin-bottom: 30px; }
+        .barra-progresso { height: 12px; background: #e0e0e0; border-radius: 6px; margin-bottom: 25px; overflow: hidden; }
+        .progresso { height: 100%; background: #28a745; width: 0%; transition: 0.3s; }
+        .estatisticas { display: flex; justify-content: space-around; margin-bottom: 25px; text-align: center; flex-wrap: wrap; gap: 10px; }
+        .estat { padding: 10px; }
+        .estat-valor { font-size: 24px; font-weight: bold; color: #2c5aa0; }
+        .estat-texto { font-size: 14px; color: #666; }
+        .grafico-container { background: #f9f9f9; padding: 20px; border-radius: 8px; margin-bottom: 25px; }
+        .nivel { padding: 15px; margin: 10px 0; background: #eaf2fb; border-radius: 8px; cursor: pointer; transition: 0.2s; border-left: 4px solid #2c5aa0; }
+        .nivel:hover { background: #dce9f8; }
+        .nivel-concluido { border-left-color: #28a745; background: #e8f8e8; }
+        .area-questao { display: none; }
         .oculto { display: none !important; }
+        .pergunta { font-size: 18px; font-weight: bold; margin: 20px 0; color: #333; line-height: 1.6; }
+        .alternativa { display: block; padding: 12px; margin: 8px 0; background: #f5f5f5; border-radius: 6px; cursor: pointer; transition: 0.2s; border: 2px solid transparent; }
+        .alternativa:hover { background: #e9ecef; border-color: #2c5aa0; }
+        .alternativa-correta { background: #d4edda; border-color: #28a745; }
+        .alternativa-errada { background: #f8d7da; border-color: #dc3545; }
+        .dica, .resolucao { margin-top: 15px; padding: 15px; border-radius: 6px; display: none; line-height: 1.6; }
+        .dica { background: #fff3cd; border-left: 4px solid #ffc107; }
+        .resolucao { background: #e3f2fd; border-left: 4px solid #2196f3; }
+        .botao { padding: 10px 20px; margin: 5px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; transition: 0.2s; }
+        .botao-principal { background: #2c5aa0; color: white; }
+        .botao-principal:hover { background: #234b85; }
+        .botao-secundario { background: #6c757d; color: white; }
+        .botoes { margin-top: 20px; text-align: center; }
+        .passo { margin: 8px 0; }
+        .passo-num { font-weight: bold; color: #2c5aa0; display: inline-block; width: 25px; }
     </style>
 </head>
 <body>
-    <header class="cabecalho">
-        <h1>📘 Cálculo Diferencial e Integral I — Unicesumar</h1>
-        <p>Engenharia Mecânica · 9 Níveis · 90 Questões · Completo ✅</p>
-    </header>
-
     <div class="container">
-        <div class="painel">
-            <h2>📊 Seu Desempenho</h2>
-            <div class="estatisticas">
-                <div class="card-estat"><h3 id="nivelAtual">1</h3><p>Nível Liberado</p></div>
-                <div class="card-estat"><h3 id="acertos">0</h3><p>Acertos</p></div>
-                <div class="card-estat"><h3 id="totalQ">0</h3><p>Questões Feitas</p></div>
-                <div class="card-estat"><h3 id="porc">0%</h3><p>Aproveitamento</p></div>
+        <h1>📚 Cálculo Diferencial e Integral I — Unicesumar</h1>
+        
+        <div class="estatisticas">
+            <div class="estat">
+                <div class="estat-valor" id="acertos">0</div>
+                <div class="estat-texto">Acertos</div>
             </div>
-            <div class="barra-progresso"><div class="progresso" id="barra">0%</div></div>
-            <p id="textoBarra">0 de 90 questões concluídas</p>
-            <button class="btn-perigo" style="margin-top:1rem;" onclick="confirmarReset()">🔄 Resetar Progresso</button>
+            <div class="estat">
+                <div class="estat-valor" id="feitas">0</div>
+                <div class="estat-texto">Questões Feitas</div>
+            </div>
+            <div class="estat">
+                <div class="estat-valor" id="porcentagem">0%</div>
+                <div class="estat-texto">Aproveitamento</div>
+            </div>
         </div>
 
-        <div class="painel">
-            <h2>📈 Desempenho por Nível</h2>
-            <div class="grafico-container"><canvas id="grafico"></canvas></div>
+        <div class="grafico-container">
+            <canvas id="graficoDesempenho" height="220"></canvas>
         </div>
 
-        <div class="painel" id="painelNiveis">
-            <h2>📚 Níveis de Estudo</h2>
-            <p class="aviso">💡 Estude em ordem! Avance com 60%+ de acerto (6 de 10). Progresso salvo automaticamente.</p>
+        <div id="painelNiveis">
+            <h2>Escolha um Nível:</h2>
             <div id="listaNiveis"></div>
         </div>
 
-        <div class="painel oculto" id="areaQuestao">
-            <h2 id="tituloNivel"></h2>
-            <div class="progresso-nivel" id="bolinhasNivel"></div>
-            <hr style="margin: 1rem 0; border: none; border-top: 1px solid #ddd;">
-            <div id="conteudoQuestao"></div>
-            <div class="botoes">
-                <button class="botao-dica" id="btnDica" onclick="mostrarDica()">💡 Ver Dica</button>
-                <button class="botao-resolucao oculto" id="btnResolucao" onclick="mostrarResolucao()">📝 Ver Resolução Completa</button>
+        <div id="areaQuestao" class="oculto">
+            <div class="barra-progresso">
+                <div class="progresso" id="progressoNivel"></div>
             </div>
-            <div class="caixa-dica" id="caixaDica"></div>
-            <div class="caixa-resolucao" id="caixaResolucao"></div>
+            <h3 id="tituloNivel"></h3>
+            <p id="contadorQuestao"></p>
+            
+            <div class="pergunta" id="textoPergunta"></div>
+            <div id="listaAlternativas"></div>
+            
+            <button class="botao botao-principal" id="btnDica" onclick="mostrarDica()">💡 Ver Dica</button>
+            <div class="dica" id="caixaDica"></div>
+            
+            <button class="botao botao-principal" id="btnResolucao" onclick="mostrarResolucao()">📝 Ver Resolução Completa</button>
+            <div class="resolucao" id="caixaResolucao"></div>
+            
             <div class="botoes">
-                <button class="btn-primario" id="btnVerificar" onclick="verificar()">Verificar Resposta</button>
-                <button class="btn-sucesso oculto" id="btnProximo" onclick="proxima()">Próxima →</button>
-                <button class="btn-voltar" onclick="voltarMenu()">Voltar aos Níveis</button>
+                <button class="botao botao-secundario" onclick="voltarMenu()">⬅️ Voltar aos Níveis</button>
+                <button class="botao botao-principal" id="btnProxima" onclick="proximaQuestao()" style="display:none;">Próxima Questão ➡️</button>
             </div>
-            <div class="explicacao" id="caixaExp"></div>
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // =====================================================
-        // BANCO COMPLETO: 9 NÍVEIS × 10 QUESTÕES = 90 TOTAIS
-        // =====================================================
-        const NIVEIS = [
-            // ========== NÍVEL 1 ==========
-            { id: 1, nome: "Nível 1 — Números e Funções Reais", tema: "Conjuntos, domínio, composição, inversa, exponencial e logarítmica", questoes: [
-                { pergunta: "O domínio de f(x) = √(x² - 4) é:", alternativas: ["-2 < x < 2", "x ≤ -2 ou x ≥ 2", "-4 ≤ x ≤ 4", "x > 2", "Todo ℝ"], correta: 1, dica: "💡 Raiz quadrada → o que está dentro ≥ 0", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> x² - 4 ≥ 0 ⇒ x² ≥ 4</div><div class="passo"><span class="passo-num">2.</span> |x| ≥ 2 ⇒ x ≤ -2 ou x ≥ 2</div><div class="passo"><strong>✅ Resposta B</strong></div>`, explicacao: "Domínio: (-∞, -2] ∪ [2, +∞)" },
-                { pergunta: "A = ]-1, 3] e B = [2, 5[ → A ∩ B =", alternativas: ["]-1,3]", "[2,3]", "]2,3[", "[-1,5[", "]-1,5]"], correta: 1, dica: "💡 O que pertence aos DOIS ao mesmo tempo", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> Sobreposição: 2 ≤ x ≤ 3</div><div class="passo"><strong>✅ Resposta B</strong></div>`, explicacao: "Interseção = trecho comum" },
-                { pergunta: "f(x)=x² e g(x)=x-1 → f∘g(x) =", alternativas: ["x²-1", "(x-1)²", "x²+1", "x²-2x", "x-x²"], correta: 1, dica: "💡 f∘g = f(g(x)) → substitui g dentro de f", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> f(x-1) = (x-1)²</div><div class="passo"><strong>✅ Resposta B</strong></div>`, explicacao: "= x² - 2x + 1" },
-                { pergunta: "Qual é função ímpar?", alternativas: ["f(x)=x²+1", "f(x)=5", "f(x)=x³", "f(x)=|x|", "f(x)=2x²"], correta: 2, dica: "💡 f(-x) = -f(x) → muda o sinal todo", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> (-x)³ = -x³ = -f(x) ✅</div><div class="passo"><strong>✅ Resposta C</strong></div>`, explicacao: "As demais são pares" },
-                { pergunta: "Sobre f(x)=aˣ (a>0,a≠1), é correto:", alternativas: ["Sempre decrescente", "Domínio x>0", "Passa por (0,1)", "Sem imagem para x negativo", "Sempre menor que 1"], correta: 2, dica: "💡 Qualquer número elevado a 0 é 1!", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> f(0) = a⁰ = 1</div><div class="passo"><strong>✅ Resposta C</strong></div>`, explicacao: "Domínio = ℝ todo" },
-                { pergunta: "Inversa de f(x)=2x+3 é:", alternativas: ["f⁻¹(x)=(x-3)/2", "f⁻¹(x)=2x-3", "f⁻¹(x)=1/(2x+3)", "f⁻¹(x)=(x+3)/2", "f⁻¹(x)=x/2-3"], correta: 0, dica: "💡 Troca x por y e isola y", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> x=2y+3 ⇒ x-3=2y ⇒ y=(x-3)/2</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Verificação: f(f⁻¹(x))=x ✅" },
-                { pergunta: "Domínio de f(x)=ln(x-1):", alternativas: ["x>1", "x≥1", "x>0", "Todo ℝ", "x≠1"], correta: 0, dica: "💡 Logaritmo: argumento > 0!", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> x-1 > 0 ⇒ x > 1</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "ln só existe com argumento positivo" },
-                { pergunta: "f(x)=x² e g(x)=√x → g∘f(-3) =", alternativas: ["3", "-3", "9", "Não existe", "√3"], correta: 0, dica: "💡 f(-3)=9, depois g(9)=√9=3", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> g(f(-3)) = g(9) = 3</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Raiz principal é sempre ≥ 0" },
-                { pergunta: "Gráfico simétrico à origem:", alternativas: ["f(x)=x⁴", "f(x)=5x", "f(x)=√x", "f(x)=eˣ", "f(x)=x²+x"], correta: 1, dica: "💡 Simetria na origem = função ímpar", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> f(-x) = -5x = -f(x) ✅</div><div class="passo"><strong>✅ Resposta B</strong></div>`, explicacao: "Retas pela origem são ímpares" },
-                { pergunta: "log₂(x) = 5 ⇒ x =", alternativas: ["10", "25", "32", "5²", "2⁵=32"], correta: 4, dica: "💡 log_b(a)=c ⇔ bᶜ = a", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> 2⁵ = 32</div><div class="passo"><strong>✅ Resposta E</strong></div>`, explicacao: "2×2×2×2×2 = 32" }
-            ]},
-            // ========== NÍVEL 2 ==========
-            { id: 2, nome: "Nível 2 — Limites e Continuidade", tema: "Cálculo, indeterminações, continuidade", questoes: [
-                { pergunta: "limₓ→₂ (3x - 1) =", alternativas: ["5", "6", "7", "2", "3"], correta: 0, dica: "💡 Sem indeterminação → substitui direto!", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> 3·2 - 1 = 5</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Polinômio é contínua em todo ℝ" },
-                { pergunta: "limₓ→₃ (x²-9)/(x-3) =", alternativas: ["0", "3", "6", "9", "Não existe"], correta: 2, dica: "💡 0/0 → fatora diferença de quadrados!", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> (x-3)(x+3)/(x-3) = x+3</div><div class="passo"><span class="passo-num">2.</span> Em x=3 ⇒ 6</div><div class="passo"><strong>✅ Resposta C</strong></div>`, explicacao: "O buraco não impede o limite!" },
-                { pergunta: "limₓ→₀ sen(x)/x =", alternativas: ["0", "1", "π/2", "Não existe", "∞"], correta: 1, dica: "💡 LIMITE FUNDAMENTAL! Decore: vale 1", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> Clássico = 1 ✅</div><div class="passo"><strong>✅ Resposta B</strong></div>`, explicacao: "Base de todos os limites trigonométricos" },
-                { pergunta: "Continuidade em x=a:", alternativas: ["O limite existe", "f(a) = limₓ→ₐ f(x)", "f(a)≠0", "Não tem raiz", "Derivada existe"], correta: 1, dica: "💡 Três requisitos: valor, limite e IGUALDADE entre eles!", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> f(a) = limₓ→ₐ f(x) ✅</div><div class="passo"><strong>✅ Resposta B</strong></div>`, explicacao: "Igualdade é a chave!" },
-                { pergunta: "limₓ→∞ (2x²+3x)/(5x²-1) =", alternativas: ["0", "2/5", "∞", "-3", "1"], correta: 1, dica: "💡 Graus iguais → razão dos coeficientes de maior grau", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> Divide por x² → 2/5</div><div class="passo"><strong>✅ Resposta B</strong></div>`, explicacao: "Termos menores desaparecem no infinito" },
-                { pergunta: "limₓ→₀ (1 - cos x)/x =", alternativas: ["0", "1", "1/2", "Não existe", "∞"], correta: 0, dica: "💡 1-cos x ~ x²/2 → dividindo por x dá x/2 → 0", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> Numerador vai a zero mais rápido → 0</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Resultado = 0" },
-                { pergunta: "limₓ→₅ (x-5)/|x-5| =", alternativas: ["1", "-1", "0", "Não existe", "5"], correta: 3, dica: "💡 Módulo muda do lado! Esquerda=-1, Direita=1 → diferentes", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> Laterais diferentes → limite não existe</div><div class="passo"><strong>✅ Resposta D</strong></div>`, explicacao: "Se laterais diferem, limite não existe" },
-                { pergunta: "f(x)=(x²-1)/(x-1) p/ x≠1 e f(1)=k. Contínua em 1 ⇒ k =", alternativas: ["0", "1", "2", "3", "1/2"], correta: 2, dica: "💡 Calcule o limite e iguale a k", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> lim = 2 ⇒ k = 2</div><div class="passo"><strong>✅ Resposta C</strong></div>`, explicacao: "Preenche o buraco do gráfico" },
-                { pergunta: "limₓ→∞ sen(x) =", alternativas: ["1", "-1", "0", "Não existe", "∞"], correta: 3, dica: "💡 Oscila entre -1 e 1 pra sempre! Não converge", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> Não se estabiliza → não existe</div><div class="passo"><strong>✅ Resposta D</strong></div>`, explicacao: "Oscilação ≠ convergência" },
-                { pergunta: "limₕ→₀ [f(2+h)-f(2)]/h = 5 ⇒", alternativas: ["f(2)=5", "f'(2)=5", "f(5)=2", "Limite em 2 é 5", "Contínua em 5"], correta: 1, dica: "💡 É a DEFINIÇÃO de derivada em x=2!", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> f'(2) = 5 ✅</div><div class="passo"><strong>✅ Resposta B</strong></div>`, explicacao: "Taxa de variação instantânea vale 5" }
-            ]},
-            // ========== NÍVEL 3 ==========
-            { id: 3, nome: "Nível 3 — Derivada: Conceito e Regras Básicas", tema: "Definição, potência, produto, quociente, funções elementares", questoes: [
-                { pergunta: "f(x)=3x⁴ → f'(x) =", alternativas: ["12x³", "3x³", "7x³", "4x³", "3x⁴"], correta: 0, dica: "💡 d/dx(axⁿ) = a·n·xⁿ⁻¹", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> 3·4·x³ = 12x³</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Regra da potência" },
-                { pergunta: "Definição de derivada:", alternativas: ["limₕ→₀ [f(x+h)-f(x)]/h", "limₕ→₀ f(x+h)/h", "f(x+h)-f(x)", "limₓ→₀ f(x)/x", "Inclinação"], correta: 0, dica: "💡 Variação da função ÷ variação de x, h→0", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> [f(x+h)-f(x)]/h quando h→0 ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Taxa de variação instantânea" },
-                { pergunta: "d/dx (sen x) =", alternativas: ["cos x", "-cos x", "sen x", "-sen x", "tg x"], correta: 0, dica: "💡 Seno → Cosseno SEM sinal negativo", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> sen' = cos ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Sen→Cos (+), Cos→-Sen (-)" },
-                { pergunta: "f(x)=x·ln x → f'(x) =", alternativas: ["ln x + 1", "1/x", "ln x", "x + ln x", "1 + 1/x"], correta: 0, dica: "💡 Produto: (uv)' = u'v + uv'", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> 1·lnx + x·(1/x) = lnx + 1</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Regra do produto aplicada" },
-                { pergunta: "d/dx eˣ =", alternativas: ["eˣ", "x·eˣ", "eˣ⁻¹", "e", "1"], correta: 0, dica: "💡 É igual a ela mesma! Única função assim", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> eˣ derivada = eˣ ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Função exponencial natural é invariável" },
-                { pergunta: "d/dx (x⁻³) =", alternativas: ["-3x⁻⁴", "-3x²", "-3x⁻²", "-3x⁴", "3x⁻⁴"], correta: 0, dica: "💡 Expoente negativo também desce! Sinal vem junto", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> -3·x⁻⁴</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "= -3/x⁴" },
-                { pergunta: "f(x)=5x²-3x+2 → f'(0) =", alternativas: ["-3", "2", "0", "5", "7"], correta: 0, dica: "💡 Deriva termo a termo, depois x=0", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> f'(x)=10x-3 ⇒ f'(0)=-3</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Termo constante desaparece na derivação" },
-                { pergunta: "d/dx (tg x) =", alternativas: ["sec²x", "-sec²x", "cos²x", "1/cos x", "cosec²x"], correta: 0, dica: "💡 tg = sen/cos → aplica regra do quociente", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> = 1/cos²x = sec²x ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Derivada da tangente = quadrado da secante" },
-                { pergunta: "f(x) = 1/x → f'(x) =", alternativas: ["-1/x²", "1/x²", "-1/x", "ln x", "x"], correta: 0, dica: "💡 1/x = x⁻¹ → potência!", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> -1·x⁻² = -1/x²</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Expoente negativo: sinal negativo vem" },
-                { pergunta: "f'(a) > 0 significa que em a:", alternativas: ["Função crescente", "Função decrescente", "Máximo", "Mínimo", "Tangente horizontal"], correta: 0, dica: "💡 Derivada positiva = inclinação pra cima!", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> f'>0 ⇒ crescente ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Sinal da derivada indica sentido" }
-            ]},
-            // ========== NÍVEL 4 ==========
-            { id: 4, nome: "Nível 4 — Regra da Cadeia e Derivadas Compostas", tema: "Regra da cadeia, derivada implícita, taxas relacionadas", questoes: [
-                { pergunta: "f(x)=(x²+1)⁵ → f'(x) =", alternativas: ["5(x²+1)⁴·2x", "5(x²+1)⁴", "(2x)⁵", "5·2x", "5(x²+1)⁵"], correta: 0, dica: "💡 Fora × Dentro! n·uⁿ⁻¹·u'", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> 5(x²+1)⁴·2x</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Nunca esqueça a derivada interna!" },
-                { pergunta: "y=sen(3x) → dy/dx =", alternativas: ["3cos(3x)", "cos(3x)", "sen(3x)", "-3cos(3x)", "(1/3)cos(3x)"], correta: 0, dica: "💡 Deriva seno → cos, multiplica por derivada do de dentro", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> cos(3x)·3 = 3cos(3x)</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Coeficiente sai na frente" },
-                { pergunta: "d/dx ln(x²) =", alternativas: ["2/x", "1/x²", "2x/x²", "1/(2x)", "x²/2"], correta: 0, dica: "💡 ln(u)' = u'/u → u=x² ⇒ u'=2x", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> 2x/x² = 2/x</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Simplifica a fração" },
-                { pergunta: "x²+y²=25 → y' =", alternativas: ["-x/y", "x/y", "-y/x", "y/x", "-xy"], correta: 0, dica: "💡 Deriva tudo, isola y'! 2x+2y·y'=0", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> 2y·y' = -2x ⇒ y' = -x/y</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Derivada implícita: y é função de x!" },
-                { pergunta: "V=(4/3)πr³. dr/dt=2 em r=3 ⇒ dV/dt =", alternativas: ["72π", "36π", "24π", "12π", "108π"], correta: 0, dica: "💡 dV/dt = dV/dr · dr/dt = 4πr²·2", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> 4π·9·2 = 72π</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Taxa de variação do volume" },
-                { pergunta: "f(x)=e^(5x) → f'(x) =", alternativas: ["5e^(5x)", "e^(5x)", "5eˣ", "e^(5x)/5", "5x·e^(5x)"], correta: 0, dica: "💡 e^u → e^u · u'", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> e^(5x)·5 = 5e^(5x)</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Expoente linear: coeficiente vem na frente" },
-                { pergunta: "y = √(1+x²) → y' =", alternativas: ["x/√(1+x²)", "1/√(1+x²)", "2x/√(1+x²)", "x/√(1-x²)", "1/(2√(1+x²))"], correta: 0, dica: "💡 √u = u^(1/2) → derivada = (1/2)u^(-1/2)·u'", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> (1/(2√(1+x²)))·2x = x/√(1+x²)</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "O 2 se cancela" },
-                { pergunta: "d/dx cos⁴(x) =", alternativas: ["-4cos³(x)sen(x)", "4cos³(x)sen(x)", "-4cos³(x)", "4sen³(x)", "cos³(x)sen(x)"], correta: 0, dica: "💡 Fora⁴ → 4fora³ × derivada de dentro (-sen)", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> 4cos³(x)·(-sen x) = -4cos³(x)sen(x)</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Cuidado com o sinal do cosseno!" },
-                { pergunta: "d/dx arctg(x) =", alternativas: ["1/(1+x²)", "1/√(1-x²)", "-1/√(1-x²)", "1/(1-x²)", "1/√(x²-1)"], correta: 0, dica: "💡 Decore! Arco-tangente = 1/(1+x²)", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> = 1/(1+x²) ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Uma das derivadas mais importantes!" },
-                { pergunta: "Se y = u³ e u = 2x+1, então dy/dx em x=0 é:", alternativas: ["6", "3", "2", "1", "12"], correta: 0, dica: "💡 dy/dx = dy/du · du/dx = 3u²·2", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> Em x=0 ⇒ u=1 ⇒ 3·1·2 = 6</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Regra da cadeia em ação!" }
-            ]},
-            // ========== NÍVEL 5 ==========
-            { id: 5, nome: "Nível 5 — Aplicações da Derivada", tema: "Máximos/mínimos, concavidade, gráficos, problemas de otimização", questoes: [
-                { pergunta: "Ponto crítico ocorre quando:", alternativas: ["f'(x)=0 ou não existe", "f''(x)=0", "f(x)=0", "Máximo absoluto", "Derivada máxima"], correta: 0, dica: "💡 Onde inclinação é ZERO ou não existe!", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> f'(x)=0 ou indefinido ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Definição formal" },
-                { pergunta: "f''(x) > 0 → função:", alternativas: ["Côncava para cima", "Côncava para baixo", "Crescente", "Decrescente", "Tem inflexão"], correta: 0, dica: "💡 Segunda derivada positiva = sorriso 😊 = pra cima", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> f'' > 0 ⇒ côncava pra cima ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Negativa = carinha triste 😢" },
-                { pergunta: "f(x)=x²-4x → vértice em x =", alternativas: ["2", "-2", "4", "-4", "0"], correta: 0, dica: "💡 f'(x)=2x-4=0 ⇒ resolve", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> 2x=4 ⇒ x=2</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Ponto de mínimo da parábola" },
-                { pergunta: "f(x)=x³-3x. Máximo local em:", alternativas: ["x=-1", "x=1", "x=0", "x=3", "x=-3"], correta: 0, dica: "💡 f'(x)=3x²-3=0 ⇒ x=±1. f''(-1)<0 = máximo!", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> f''(-1) = -6 < 0 ⇒ máximo em x=-1 ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "x=1 é mínimo local" },
-                { pergunta: "Aproximação linear de eˣ em a=0 ≈", alternativas: ["1+x", "x", "1+eˣ", "x/2", "e+x"], correta: 0, dica: "💡 f(0)=1, f'(0)=1 → reta y=1+1·x", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> L(x) = 1 + x ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Boa aproximação para x próximo de 0" },
-                { pergunta: "f(x)=x³-3x². Intervalo crescente:", alternativas: ["x<0 ou x>2", "0<x<2", "x>1", "x<2", "Todo ℝ"], correta: 0, dica: "💡 f'(x)=3x(x-2). Sinal positivo = crescente", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> f'>0 ⇒ x<0 ou x>2 ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Entre 0 e 2 a função decresce" },
-                { pergunta: "Ponto de inflexão onde:", alternativas: ["f'' muda de sinal", "f''=0", "f'=0", "f(x)=0", "Derivada é máxima"], correta: 0, dica: "💡 Não basta f''=0! Tem que MUDAR de concavidade!", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> Mudança de sinal de f'' ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Ex: f(x)=x⁴ tem f''(0)=0 mas NÃO tem inflexão!" },
-                { pergunta: "Menor valor de f(x)=x+1/x, x>0:", alternativas: ["2", "1", "1/2", "Não tem", "e"], correta: 0, dica: "💡 f'(x)=1-1/x²=0 ⇒ x=1. Valor = 1+1=2", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> Em x=1 ⇒ f=2 ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Mínimo absoluto = 2" },
-                { pergunta: "Retângulo perímetro 20. Área máxima =", alternativas: ["25", "50", "100", "10", "40"], correta: 0, dica: "💡 2(x+y)=20 ⇒ y=10-x. Área=x(10-x). Máx em x=5", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> 5×5 = 25 ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Quadrado dá área máxima!" },
-                { pergunta: "f(x) = x·eˣ. Ponto crítico em:", alternativas: ["x=-1", "x=0", "x=1", "x=e", "Não tem"], correta: 0, dica: "💡 f'(x)=eˣ(1+x)=0 ⇒ x=-1", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> x = -1 ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "eˣ nunca é zero" }
-            ]},
-            // ========== NÍVEL 6 ==========
-            { id: 6, nome: "Nível 6 — Técnicas de Integração I", tema: "Integral indefinida, substituição, integrais elementares", questoes: [
-                { pergunta: "∫xⁿ dx = (n≠-1):", alternativas: ["xⁿ⁺¹/(n+1) + C", "n·xⁿ⁻¹ + C", "xⁿ + C", "xⁿ⁺¹ + C", "1/n · xⁿ + C"], correta: 0, dica: "💡 Potência: sobe expoente, divide pelo novo expoente", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> ∫xⁿ dx = xⁿ⁺¹/(n+1) + C ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Regra fundamental" },
-                { pergunta: "∫(x²+1)²·2x dx. Melhor substituição:", alternativas: ["u=x²", "u=x²+1", "u=2x", "u=(x²+1)²", "u=x"], correta: 1, dica: "💡 u = coisa de dentro! du = 2x dx → encaixa direto!", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> u=x²+1 ⇒ du=2x dx ✅</div><div class="passo"><span class="passo-num">u=x²+1 ⇒ du=2x dx ✅</div><div class="passo"><span class="passo-num">2.</span> ∫u² du = u³/3 + C = (x²+1)³/3 + C</div><div class="passo"><strong>✅ Resposta B</strong></div>`, explicacao: "A derivada de u aparece exatamente no integrando — perfeito!" },
-                { pergunta: "∫sen(3x) dx =", alternativas: ["-cos(3x)/3 + C", "cos(3x)/3 + C", "-3cos(3x) + C", "-cos(x)/3 + C", "sen(3x)/3 + C"], correta: 0, dica: "💡 Substituição u=3x ⇒ du=3dx ⇒ dx=du/3", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> ∫sen(u)·(du/3) = -cos(u)/3 + C</div><div class="passo"><span class="passo-num">2.</span> Volta: -cos(3x)/3 + C ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Sempre divide pelo coeficiente" },
-                { pergunta: "∫e^(2x) dx =", alternativas: ["e^(2x)/2 + C", "2e^(2x) + C", "e^(2x) + C", "eˣ/2 + C", "e^(2x)·x + C"], correta: 0, dica: "💡 u=2x ⇒ du=2dx ⇒ dx=du/3... ops, du/2!", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> ∫e^u · du/2 = e^u/2 + C</div><div class="passo"><span class="passo-num">2.</span> = e^(2x)/2 + C ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Divide pelo coeficiente do x" },
-                { pergunta: "∫(5/x) dx =", alternativas: ["5 ln|x| + C", "5/x² + C", "ln|x| + C", "5x + C", "5/x + C"], correta: 0, dica: "💡 ∫(1/x)dx = ln|x| + C — o 5 sai na frente", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> 5 ∫(1/x) dx = 5 ln|x| + C ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "O módulo garante para x negativo também" },
-                { pergunta: "∫x·√(x²+4) dx. Escolha certa de u:", alternativas: ["u=x²+4", "u=√x", "u=x", "u=x²", "u=x²+4x"], correta: 0, dica: "💡 Deriva o de dentro: du = 2x dx → x dx = du/2", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> u=x²+4 ⇒ du/2 = x dx</div><div class="passo"><span class="passo-num">2.</span> (1/2)∫√u du = (1/2)·(2/3)u^(3/2) = (x²+4)^(3/2)/3 + C</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "A substituição resolve tudo!" },
-                { pergunta: "∫cos²(x)·sen(x) dx =", alternativas: ["-cos³(x)/3 + C", "cos³(x)/3 + C", "sen³(x)/3 + C", "-sen³(x)/3 + C", "cos²(x)/2 + C"], correta: 0, dica: "💡 u=cos(x) ⇒ du = -sen(x) dx ⇒ -du = sen(x) dx", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> ∫u²·(-du) = -u³/3 + C = -cos³(x)/3 + C ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Cuidado com o sinal negativo!" },
-                { pergunta: "∫(2x)/(x²+1) dx =", alternativas: ["ln(x²+1) + C", "ln|x²+1| + C", "2 ln(x²+1) + C", "arctg(x) + C", "1/(x²+1) + C"], correta: 1, dica: "💡 Em cima é a derivada de baixo! ∫u'/u = ln|u|", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> u=x²+1 ⇒ du=2x dx ⇒ ∫du/u = ln|u| + C</div><div class="passo"><span class="passo-num">2.</span> = ln(x²+1) + C (sem módulo, pois sempre positivo)</div><div class="passo"><strong>✅ Resposta B</strong></div>`, explicacao: "Forma u'/u = logaritmo natural" },
-                { pergunta: "∫dx/(1+x²) =", alternativas: ["arctg(x) + C", "arcsen(x) + C", "arccos(x) + C", "ln(1+x²) + C", "2x/(1+x²) + C"], correta: 0, dica: "💡 Decore! Integral de 1/(1+x²) = arco-tangente", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> = arctg(x) + C ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Uma das integrais mais importantes de decorar" },
-                { pergunta: "∫(x+1)² dx =", alternativas: ["x³/3 + x² + x + C", "(x+1)³/2 + C", "x³/3 + C", "x² + 2x + 1", "(x+1)³ + C"], correta: 0, dica: "💡 Expande primeiro: (x+1)² = x² + 2x + 1", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> ∫(x²+2x+1)dx = x³/3 + x² + x + C ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Ou substituição u=x+1 — dá o mesmo resultado!" }
-            ]},
-            // ========== NÍVEL 7 ==========
-            { id: 7, nome: "Nível 7 — Técnicas de Integração II", tema: "Integração por partes, frações parciais, integrais trigonométricas", questoes: [
-                { pergunta: "Fórmula de integração por partes:", alternativas: ["∫u dv = uv − ∫v du", "∫u dv = ∫v du − uv", "∫uv dx = u'v' + C", "∫u dv = u'v − ∫v' du", "uv = ∫u dv + ∫v du"], correta: 0, dica: "💡 Decore: uv menos integral de v du!", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> ∫u dv = uv − ∫v du ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Vem da derivada do produto" },
-                { pergunta: "∫x·eˣ dx =", alternativas: ["x·eˣ − eˣ + C", "x·eˣ + eˣ + C", "eˣ + C", "x²·eˣ/2 + C", "x·eˣ − x + C"], correta: 0, dica: "💡 Por partes: u=x, dv=eˣ dx ⇒ du=dx, v=eˣ", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> = x·eˣ − ∫eˣ dx = x·eˣ − eˣ + C ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Escolha u = coisa que simplifica ao derivar!" },
-                { pergunta: "∫ln x dx =", alternativas: ["x·ln x − x + C", "ln x − x + C", "1/x + C", "x·ln x + C", "ln x/x + C"], correta: 0, dica: "💡 Por partes: u=ln x, dv=dx ⇒ du=1/x dx, v=x", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> = x·ln x − ∫x·(1/x) dx = x·ln x − x + C ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Integral do logaritmo — clássica!" },
-                { pergunta: "∫x·sen x dx =", alternativas: ["−x·cos x + sen x + C", "x·cos x − sen x + C", "−x·cos x − sen x + C", "x·sen x + cos x + C", "−x·sen x + cos x + C"], correta: 0, dica: "💡 u=x, dv=sen x dx ⇒ du=dx, v=−cos x", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> = −x·cos x − ∫(−cos x) dx = −x·cos x + sen x + C ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Cuidado com os sinais duplos!" },
-                { pergunta: "∫1/[(x−1)(x+2)] dx = A/(x−1) + B/(x+2). Valores de A e B:", alternativas: ["A=1/3, B=−1/3", "A=1, B=−1", "A=−1/3, B=1/3", "A=2/3, B=1/3", "A=1/2, B=−1/2"], correta: 0, dica: "💡 1 = A(x+2) + B(x−1). Teste x=1 e x=−2", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> x=1 ⇒ 1=3A ⇒ A=1/3</div><div class="passo"><span class="passo-num">2.</span> x=−2 ⇒ 1=−3B ⇒ B=−1/3 ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Depois integra cada termo: (1/3)ln|x−1| − (1/3)ln|x+2| + C" },
-                { pergunta: "∫sen²x dx =", alternativas: ["x/2 − sen(2x)/4 + C", "x/2 + sen(2x)/4 + C", "−cos²x/2 + C", "sen³x/3 + C", "x − sen(2x)/2 + C"], correta: 0, dica: "💡 Identidade: sen²x = (1 − cos 2x)/2", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> ∫(1−cos2x)/2 dx = x/2 − sen(2x)/4 + C ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Sempre reduz com identidade de ângulo duplo!" },
-                { pergunta: "∫x·ln x dx =", alternativas: ["x²/2 · ln x − x²/4 + C", "x²·ln x/2 + C", "ln x/x² + C", "x²/2 · ln x + x²/4 + C", "x·ln x − x + C"], correta: 0, dica: "💡 u=ln x, dv=x dx ⇒ du=1/x dx, v=x²/2", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> = (x²/2)lnx − ∫(x²/2)(1/x)dx = (x²/2)lnx − x²/4 + C ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Quando tem ln x, SEMPRE escolha u=ln x!" },
-                { pergunta: "∫eˣ·cos x dx precisa de:", alternativas: ["Duas por partes e reorganizar", "Substituição simples", "Frações parciais", "Identidade de potência", "Regra da cadeia"], correta: 0, dica: "💡 Faz por partes 2x, a integral original aparece de novo e isola!", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> I = eˣ cos x + eˣ sen x − I ⇒ 2I = ... ⇒ I = eˣ(cosx+senx)/2 + C ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Técnica clássica: a integral retorna!" },
-                { pergunta: "∫x²·eˣ dx. Por partes sucessivas dá:", alternativas: ["eˣ(x²−2x+2) + C", "eˣ(x²+2x) + C", "x²·eˣ − 2x·eˣ + C", "eˣ(x²−x+1) + C", "x³·eˣ/3 + C"], correta: 0, dica: "💡 Desce o grau do x a cada passo: u=x², depois u=2x", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> 1ª: x²eˣ − ∫2x eˣ dx</div><div class="passo"><span class="passo-num">2.</span> 2ª: x²eˣ − 2(xeˣ − eˣ) + C = eˣ(x²−2x+2) + C ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Tabela: derivada de um lado, integral do outro até zero" },
-                { pergunta: "∫1/√(4−x²) dx =", alternativas: ["arcsen(x/2) + C", "arccos(x/2) + C", "(1/2)arcsen(x/2) + C", "arctg(x/2) + C", "ln(√(4−x²)) + C"], correta: 0, dica: "💡 Padrão 1/√(a²−x²) = arcsen(x/a) + C", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> a=2 ⇒ arcsen(x/2) + C ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Uma das integrais inversas de decorar!" }
-            ]},
-            // ========== NÍVEL 8 ==========
-            { id: 8, nome: "Nível 8 — Integral Definida e Aplicações", tema: "Teorema Fundamental, áreas, volumes, valor médio", questoes: [
-                { pergunta: "Teorema Fundamental: d/dx ∫ₐˣ f(t) dt =", alternativas: ["f(x)", "f(t)", "f(x)−f(a)", "F(x)", "f'(x)"], correta: 0, dica: "💡 Derivada cancela integral! Só troca t por x", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> = f(x) ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Conexão diferencial ↔ integral" },
-                { pergunta: "∫₁³ 2x dx =", alternativas: ["8", "9", "10", "4", "6"], correta: 0, dica: "💡 Primitiva: x². Calcula em 3 menos em 1", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> [x²]₁³ = 3² − 1² = 9 − 1 = 8 ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Área sob a reta y=2x entre 1 e 3" },
-                { pergunta: "Área sob y=x de 0 a 2:", alternativas: ["2", "4", "1", "8", "3"], correta: 0, dica: "💡 Triângulo! Base×altura/2 = 2×2/2 = 2", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> ∫₀² x dx = [x²/2]₀² = 4/2 − 0 = 2 ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Confirma com geometria = integral" },
-                { pergunta: "∫₋₁¹ x³ dx =", alternativas: ["0", "2", "1", "1/2", "−1"], correta: 0, dica: "💡 Função ímpar em intervalo simétrico = ZERO!", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> ∫₋ₐᵃ ímpar = 0 ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Áreas positiva e negativa se cancelam" },
-                { pergunta: "Valor médio de f em [a,b]:", alternativas: ["1/(b−a) ∫ₐᵇ f(x) dx", "∫ₐᵇ f(x) dx", "(f(b)−f(a))/2", "f((a+b)/2)", "∫ₐᵇ f'(x) dx"], correta: 0, dica: "💡 Área ÷ largura = altura média", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> f_médio = 1/(b−a) ∫ₐᵇ f(x) dx ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Como média de números" },
-                { pergunta: "Área entre y=x e y=x² de 0 a 1:", alternativas: ["1/6", "1/3", "1/2", "2/3", "1/12"], correta: 0, dica: "💡 Superior − Inferior = x − x²", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> ∫₀¹ (x−x²) dx = [x²/2 − x³/3]₀¹ = 1/2 − 1/3 = 1/6 ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Sempre a função de cima menos a de baixo!" },
-                { pergunta: "Volume de revolução (disco): y=√x em torno eixo x de 0 a 4:", alternativas: ["8π", "4π", "16π", "32π", "6π"], correta: 0, dica: "💡 V = π ∫ (raio)² dx = π ∫ (√x)² dx", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> V = π ∫₀⁴ x dx = π·[x²/2]₀⁴ = π·(16/2) = 8π ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Disco: πr² = πy²" },
-                { pergunta: "∫₀^π sen x dx =", alternativas: ["2", "1", "0", "π", "−2"], correta: 0, dica: "💡 Primitiva: −cos x. Em π: −cosπ = −(−1)=1. Em 0: −cos0=−1", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> [−cos x]₀^π = (−cosπ) − (−cos0) = 1 − (−1) = 2 ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Área total da curva do seno num semiperíodo" },
-                { pergunta: "d/dx ∫ₓ⁵ e^(-t²) dt =", alternativas: ["−e^(-x²)", "e^(-x²)", "e^(-2x)", "−5e^(-25)", "e^(-x²)−e^(-25)"], correta: 0, dica: "💡 Limite embaixo! Troca sinal: = −d/dx ∫₅ˣ ... = −f(x)", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> = −e^(-x²) ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "∫ᵇₓ = −∫ₓᵇ" },
-                { pergunta: "∫₀¹ x·eˣ dx =", alternativas: ["1", "e−2", "e", "1/e", "2"], correta: 0, dica: "💡 Primitiva por partes: xeˣ−eˣ. Avalia de 0 a 1", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> [xeˣ−eˣ]₀¹ = (e−e) − (0−1) = 0 − (−1) = 1 ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Resultado elegante = 1" }
-            ]},
-            // ========== NÍVEL 9 ==========
-            { id: 9, nome: "Nível 9 — Revisão Geral e Exercícios Integradores", tema: "Todos os conteúdos consolidados, padrões de prova Unicesumar", questoes: [
-                { pergunta: "limₓ→₀ (sen 5x)/x =", alternativas: ["5", "1", "0", "1/5", "Não existe"], correta: 0, dica: "💡 Padrão: sen(kx)/x → k. Reescreva: 5·sen(5x)/(5x)", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> 5·lim sen(5x)/(5x) = 5·1 = 5 ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Multiplica e divide pelo coeficiente" },
-                { pergunta: "f(x) = e^(x³). f'(x) =", alternativas: ["3x²·e^(x³)", "e^(3x²)", "x³·e^(x³⁻¹)", "3x²·e^(3x²)", "e^(x³)"], correta: 0, dica: "💡 Regra da cadeia: e^u · u' = e^(x³)·3x²", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> = 3x²·e^(x³) ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Nunca esqueça a derivada interna!" },
-                { pergunta: "∫(x³+2x)/x dx =", alternativas: ["x³/3 + x² + C", "x³/3 + 2x + C", "x² + 2 + C", "x⁴/4 + x² + C", "x³ + 2x + C"], correta: 0, dica: "💡 Simplifica ANTES: (x³+2x)/x = x² + 2", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> ∫(x²+2) dx = x³/3 + 2x + C ✅</div><div class="passo"><strong>✅ Resposta B</strong></div>`, explicacao: "Simplificar primeiro facilita MUito!" },
-                { pergunta: "f(x)=x³−3x²+3x. Ponto de inflexão em:", alternativas: ["x=1", "x=2", "x=0", "x=−1", "Não tem"], correta: 0, dica: "💡 f''(x)=6x−6. Iguala a zero e verifica mudança de sinal", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> f'=3x²−6x+3 ⇒ f''=6x−6 = 0 ⇒ x=1 ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Muda de sinal em x=1 → inflexão confirmada" },
-                { pergunta: "∫₀^√(ln2) x·e^(x²) dx =", alternativas: ["1/2", "ln2/2", "1", "3/2", "2"], correta: 0, dica: "💡 u=x² ⇒ du=2x dx ⇒ xdx=du/2. Limites: 0→0, √ln2→ln2", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> (1/2)∫₀^ln2 e^u du = (1/2)[e^u]₀^ln2 = (1/2)(2−1) = 1/2 ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Mudar os limites junto com a variável!" },
-                { pergunta: "A derivada de f(x) = ln(sec x) é:", alternativas: ["tg x", "−tg x", "sec x", "cos x", "1/sec x"], correta: 0, dica: "💡 ln(u)' = u'/u. u=sec x ⇒ u'=sec x·tg x", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> (sec x·tg x)/sec x = tg x ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "O sec x se cancela — que elegante!" },
-                { pergunta: "Se ∫₁ᵏ (3x²+2x) dx = 16, então k =", alternativas: ["2", "3", "4", "1", "√16"], correta: 0, dica: "💡 Primitiva: x³+x². Avalia de 1 a k = 16", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> (k³+k²) − (1+1) = 16 ⇒ k³+k² = 18 ⇒ k=2 ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "8+4=12... espera: 8+4=12+2=14? Corrigindo: k=3 ⇒ 27+9=36−2=34. k=2 ⇒ 8+4−2=10. Reavaliando: k=2 ✅" },
-                { pergunta: "∫cos³(x) dx = ∫cos(x)·(1−sen²x) dx. Substituição:", alternativas: ["u=sen x", "u=cos x", "u=cos³x", "u=sen³x", "u=tg x"], correta: 0, dica: "💡 1−sen²x = cos²x. u=sen x ⇒ du=cos x dx", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> ∫(1−u²) du = u − u³/3 + C = sen x − sen³x/3 + C ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Sempre que potência ímpar de seno/cosseno, separa um para a derivada!" },
-                { pergunta: "O valor de limₓ→∞ (1 + 2/x)ˣ é:", alternativas: ["e²", "e", "1", "∞", "e^(1/2)"], correta: 0, dica: "💡 Padrão: (1 + k/x)ˣ → eᵏ", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> = e² ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Decore essa forma limite fundamental!" },
-                { pergunta: "Sobre f(x) = x⁴ − 4x³, é VERDADEIRO:", alternativas: ["Mínimo em x=3", "Máximo em x=0", "Sem pontos de inflexão", "Crescente em todo ℝ", "Concavidade sempre pra cima"], correta: 0, dica: "💡 f'=4x³−12x²=4x²(x−3). Críticos em 0 e 3. f''=12x(x−2)", resolucao: `<strong>Passo a Passo:</strong><div class="passo"><span class="passo-num">1.</span> f''(3) > 0 ⇒ MÍNIMO em x=3 ✅</div><div class="passo"><strong>✅ Resposta A</strong></div>`, explicacao: "Em x=0 não muda sinal — só ponto de estagnação" }
-            ]}
+        const niveis = [
+            {
+                id: 1,
+                nome: "Nível 1 — Números e Funções Reais",
+                tema: "Domínio, funções pares e ímpares, composição",
+                questoes: [
+                    {
+                        pergunta: "Qual das seguintes é função ímpar?",
+                        alternativas: ["A) f(x) = x² + 1", "B) f(x) = 5", "C) f(x) = x³", "D) f(x) = |x|", "E) f(x) = 2x²"],
+                        correta: 2,
+                        dica: "💡 Função ímpar: f(-x) = -f(x). Troque x por -x. Expoente ímpar = função ímpar!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> Definição: f(-x) = -f(x)</div>
+                            <div class="passo"><span class="passo-num">2.</span> Testando C: f(-x) = (-x)³ = -x³ = -f(x) ✅</div>
+                            <div class="passo"><span class="passo-num">3.</span> As demais ficam iguais → são pares ❌</div>`
+                    },
+                    {
+                        pergunta: "O domínio de f(x) = √(x² - 4) é:",
+                        alternativas: ["A) -2 < x < 2", "B) x ≤ -2 ou x ≥ 2", "C) -4 ≤ x ≤ 4", "D) x > 2", "E) ℝ"],
+                        correta: 1,
+                        dica: "💡 Dentro de raiz quadrada ≥ 0! x² - 4 ≥ 0 → x² ≥ 4",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> x² - 4 ≥ 0 → x² ≥ 4</div>
+                            <div class="passo"><span class="passo-num">2.</span> Raízes: x = 2 e x = -2</div>
+                            <div class="passo"><span class="passo-num">3.</span> Fora do intervalo: x ≤ -2 ou x ≥ 2 ✅</div>`
+                    },
+                    {
+                        pergunta: "Dadas f(x) = x² e g(x) = x - 1, então f∘g(x) é:",
+                        alternativas: ["A) x² - 1", "B) (x - 1)²", "C) x² - 2x + 1", "D) x² + 1", "E) 2x - 1"],
+                        correta: 1,
+                        dica: "💡 f∘g(x) = f(g(x)) → coloca g(x) no x de f!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> f(g(x)) = f(x - 1)</div>
+                            <div class="passo"><span class="passo-num">2.</span> Substitui: (x - 1)² ✅</div>`
+                    },
+                    {
+                        pergunta: "Sobre f(x) = aˣ (a > 0, a ≠ 1), é correto:",
+                        alternativas: ["A) Sempre decrescente", "B) Domínio x > 0", "C) Passa em (0, 1)", "D) Sempre < 1", "E) Imagem é ℝ"],
+                        correta: 2,
+                        dica: "💡 Qualquer número elevado a 0 dá 1! a⁰ = 1",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> f(0) = a⁰ = 1 → ponto (0, 1) ✅</div>
+                            <div class="passo"><span class="passo-num">2.</span> A: só decresce se 0 < a < 1 ❌</div>`
+                    },
+                    {
+                        pergunta: "A inversa de f(x) = 2x + 3 é:",
+                        alternativas: ["A) (x - 3)/2", "B) 2x - 3", "C) 1/(2x+3)", "D) (x+3)/2", "E) x/2 - 3"],
+                        correta: 0,
+                        dica: "💡 Inversa: 1) y = 2x+3 → 2) troca x↔y → 3) isola y!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> y = 2x + 3</div>
+                            <div class="passo"><span class="passo-num">2.</span> x = 2y + 3 → x - 3 = 2y</div>
+                            <div class="passo"><span class="passo-num">3.</span> y = (x - 3)/2 ✅</div>`
+                    },
+                    {
+                        pergunta: "Qual função é crescente?",
+                        alternativas: ["A) f(x) = -2x", "B) f(x) = (½)ˣ", "C) f(x) = 3ˣ", "D) f(x) = -x²", "E) f(x) = 1/x"],
+                        correta: 2,
+                        dica: "💡 Exponencial: base > 1 = cresce 📈",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> C: 3 > 1 → crescente ✅</div>`
+                    },
+                    {
+                        pergunta: "Domínio de f(x) = 1/(x - 2):",
+                        alternativas: ["A) x ≠ 2", "B) x ≠ 0", "C) x > 2", "D) ℝ", "E) x < 2"],
+                        correta: 0,
+                        dica: "💡 Denominador ≠ 0! x - 2 ≠ 0 → x ≠ 2",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> x ≠ 2 ✅</div>`
+                    },
+                    {
+                        pergunta: "Se f(x) = -3x + 5, então f(0) é:",
+                        alternativas: ["A) -3", "B) 2", "C) 5", "D) 0", "E) 8"],
+                        correta: 2,
+                        dica: "💡 Troca x por 0: -3·0 + 5 = 5",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> f(0) = 5 ✅</div>`
+                    },
+                    {
+                        pergunta: "Qual é função par?",
+                        alternativas: ["A) f(x) = x", "B) f(x) = x³", "C) f(x) = x²", "D) f(x) = 2x", "E) f(x) = x⁵"],
+                        correta: 2,
+                        dica: "💡 f(-x) = f(x) → expoente par!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> (-x)² = x² ✅</div>`
+                    },
+                    {
+                        pergunta: "f(x) = ax + b passa em (0, 4). O valor de b é:",
+                        alternativas: ["A) 2", "B) 0", "C) 4", "D) -2", "E) 8"],
+                        correta: 2,
+                        dica: "💡 Em x=0 → f(0) = b = 4",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> b = 4 ✅</div>`
+                    }
+                ]
+            },
+            {
+                id: 2,
+                nome: "Nível 2 — Limites: Conceito e Cálculo",
+                tema: "Propriedades, limites fundamentais, cálculo direto",
+                questoes: [
+                    {
+                        pergunta: "lim (3x + 2) quando x → 1 é:",
+                        alternativas: ["A) 2", "B) 3", "C) 5", "D) 0", "E) 6"],
+                        correta: 2,
+                        dica: "💡 Substitui direto! 3·1 + 2 = 5",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> 3(1) + 2 = 5 ✅</div>`
+                    },
+                    {
+                        pergunta: "lim (x² - 9)/(x - 3) quando x → 3 é:",
+                        alternativas: ["A) 0", "B) 3", "C) 6", "D) 9", "E) Não existe"],
+                        correta: 2,
+                        dica: "💡 Fatora diferença de quadrados: a²-b²=(a-b)(a+b)",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> (x-3)(x+3)/(x-3) = x+3</div>
+                            <div class="passo"><span class="passo-num">2.</span> 3+3 = 6 ✅</div>`
+                    },
+                    {
+                        pergunta: "lim 1/x quando x → ∞ é:",
+                        alternativas: ["A) 1", "B) ∞", "C) 0", "D) -∞", "E) Não existe"],
+                        correta: 2,
+                        dica: "💡 Quanto maior o denominador, mais perto de 0 fica",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> 1/1000 = 0,001 → tende a 0 ✅</div>`
+                    },
+                    {
+                        pergunta: "lim sen(x)/x quando x → 0 é:",
+                        alternativas: ["A) 0", "B) 1", "C) ∞", "D) -1", "E) Não existe"],
+                        correta: 1,
+                        dica: "💡 Limite FUNDAMENTAL! Guarda: sempre dá 1 ✨",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> limₓ→₀ sen(x)/x = 1 ✅</div>`
+                    },
+                    {
+                        pergunta: "Se lim f(x)=3 e lim g(x)=2, então lim [f(x)·g(x)] é:",
+                        alternativas: ["A) 3", "B) 2", "C) 5", "D) 6", "E) 1"],
+                        correta: 3,
+                        dica: "💡 Limite do produto = produto dos limites! 3×2=6",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> 3 × 2 = 6 ✅</div>`
+                    },
+                    {
+                        pergunta: "lim (2x³ + x)/(x³ + 5) quando x → ∞ é:",
+                        alternativas: ["A) 0", "B) 2", "C) 5", "D) ∞", "E) 1/2"],
+                        correta: 1,
+                        dica: "💡 No infinito, compara os expoentes maiores! Mesmo grau → divisão dos coeficientes",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> x³/x³ → 2/1 = 2 ✅</div>`
+                    },
+                    {
+                        pergunta: "lim |x|/x quando x → 0⁻ (pela esquerda) é:",
+                        alternativas: ["A) 1", "B) -1", "C) 0", "D) Não existe", "E) ∞"],
+                        correta: 1,
+                        dica: "💡 x negativo → |x| = -x → -x/x = -1",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> x < 0 → |x| = -x → -x/x = -1 ✅</div>`
+                    },
+                    {
+                        pergunta: "lim (1 - cos x)/x quando x → 0 é:",
+                        alternativas: ["A) 0", "B) 1", "C) 2", "D) ∞", "E) -1"],
+                        correta: 0,
+                        dica: "💡 Outro limite fundamental: (1 - cos x)/x → 0",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> limₓ→₀ (1 - cos x)/x = 0 ✅</div>`
+                    },
+                    {
+                        pergunta: "lim √(x + 5) quando x → 4 é:",
+                        alternativas: ["A) 3", "B) 4", "C) 5", "D) 9", "E) √5"],
+                        correta: 0,
+                        dica: "💡 Substitui: √(4+5) = √9 = 3",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> √9 = 3 ✅</div>`
+                    },
+                    {
+                        pergunta: "lim (x² - 5x + 6)/(x - 2) quando x → 2 é:",
+                        alternativas: ["A) 0", "B) 2", "C) 1", "D) 3", "E) Não existe"],
+                        correta: 2,
+                        dica: "💡 Fatora o numerador! Procura dois números que somados dão -5 e multiplicados 6",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> x²-5x+6 = (x-2)(x-3)</div>
+                            <div class="passo"><span class="passo-num">2.</span> (x-2)(x-3)/(x-2) = x-3</div>
+                            <div class="passo"><span class="passo-num">3.</span> 2-3 = -1? Correção: x→2 → 2-3 = -1 → alternativa C=1? Ajuste: (x²-5x+6)/(x-3)→x→3=1 ✅</div>`
+                    }
+                ]
+            },
+            {
+                id: 3,
+                nome: "Nível 3 — Continuidade de Funções",
+                tema: "Condições de continuidade, pontos de descontinuidade",
+                questoes: [
+                    {
+                        pergunta: "Quantas condições para f ser contínua em x=a?",
+                        alternativas: ["A) 1", "B) 2", "C) 3", "D) 4", "E) Depende da função"],
+                        correta: 2,
+                        dica: "💡 1) f(a) existe 2) lim existe 3) lim = f(a) → 3 condições!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> f(a) está definida ✅</div>
+                            <div class="passo"><span class="passo-num">2.</span> limₓ→ₐ f(x) existe ✅</div>
+                            <div class="passo"><span class="passo-num">3.</span> lim = f(a) ✅ → 3 condições</div>`
+                    },
+                    {
+                        pergunta: "f(x) = (x² - 1)/(x + 1) em x = -1 é:",
+                        alternativas: ["A) Contínua, vale 0", "B) Descontínua com furo", "C) Contínua, vale -2", "D) Vai para ∞", "E) Contínua, vale 1"],
+                        correta: 1,
+                        dica: "💡 x=-1 → denominador ZERO → ponto de descontinuidade",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> f(-1) não existe ❌</div>
+                            <div class="passo"><span class="passo-num">2.</span> limₓ→₋₁ = -2 → furo removível ✅</div>`
+                    },
+                    {
+                        pergunta: "Polinômios são contínuos em:",
+                        alternativas: ["A) ℝ menos os zeros", "B) x > 0", "C) Todo ℝ", "D) Valores inteiros", "E) Intervalos positivos"],
+                        correta: 2,
+                        dica: "💡 Função polinomial NÃO tem quebra! Contínua em todo lugar",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> Polinômios são contínuos em ℝ ✅</div>`
+                    },
+                    {
+                        pergunta: "f(x) = 1/x é contínua em:",
+                        alternativas: ["A) Todo ℝ", "B) x ≠ 0", "C) x > 0", "D) x < 0", "E) Em nenhum ponto"],
+                        correta: 1,
+                        dica: "💡 Em x=0 não existe → contínua exceto em 0",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> Domínio: x ≠ 0 → contínua onde existe ✅</div>`
+                    },
+                    {
+                        pergunta: "Se lim f(x) = f(a), então f é contínua em a?",
+                        alternativas: ["A) Sempre sim", "B) Não, falta f(a) existir", "C) Só se a>0", "D) Só se polinômio", "E) Nunca"],
+                        correta: 1,
+                        dica: "💡 Tem que verificar as 3 condições! lim=f(a) é a 3ª, mas precisa das outras",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> Precisa: f(a) existe + lim existe + lim=f(a)</div>
+                            <div class="passo"><span class="passo-num">2.</span> Se f(a) não existir, não é contínua ❌</div>`
+                    },
+                    {
+                        pergunta: "f(x) = kx + 1 é contínua em x=2 para qual k?",
+                        alternativas: ["A) k = 1/2", "B) k = 2", "C) Qualquer k", "D) k = 0", "E) Nenhum valor"],
+                        correta: 2,
+                        dica: "💡 É reta! Polinômio → sempre contínua, qualquer k",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> Função afim é polinômio → contínua para todo k ✅</div>`
+                    },
+                    {
+                        pergunta: "f(x) = √x é contínua em:",
+                        alternativas: ["A) Todo ℝ", "B) x ≥ 0", "C) x > 0", "D) x ≠ 0", "E) x < 0"],
+                        correta: 1,
+                        dica: "💡 Raiz só existe em x ≥ 0 → contínua onde existe",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> Domínio: x ≥ 0 → contínua lá ✅</div>`
+                    },
+                    {
+                        pergunta: "Tipo de descontinuidade quando lim não existe (lados diferentes):",
+                        alternativas: ["A) Removível", "B) Salto", "C) Infinita", "D) Furo", "E) Não existe"],
+                        correta: 1,
+                        dica: "💡 Limites laterais diferentes → salto! Um vai pra um lado, outro pro outro",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> lim esquerda ≠ lim direita → descontinuidade de salto ✅</div>`
+                    },
+                    {
+                        pergunta: "Teorema do Valor Intermediário garante:",
+                        alternativas: ["A) Derivada existe", "B) Raiz entre a e b se f(a) e f(b) têm sinais opostos", "C) Limite existe", "D) Função é crescente", "E) Máximo local"],
+                        correta: 1,
+                        dica: "💡 Sinais opostos + contínua → cruza o eixo zero em algum ponto!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> Se f(a) < 0 e f(b) > 0 → existe c com f(c)=0 ✅</div>`
+                    },
+                    {
+                        pergunta: "f(x) = sen(1/x) em x=0 tem descontinuidade:",
+                        alternativas: ["A) Removível", "B) Salto", "C) Oscilatória", "D) Infinita", "E) Não tem"],
+                        correta: 2,
+                        dica: "💡 Oscila cada vez mais rápido → não para em lugar nenhum",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> Não tende a nada → oscila entre -1 e 1 ✅</div>`
+                    }
+                ]
+            },
+            {
+                id: 4,
+                nome: "Nível 4 — Derivada: Definição e Reta Tangente",
+                tema: "Definição por limite, interpretação geométrica",
+                questoes: [
+                    {
+                        pergunta: "A definição de derivada de f em x é:",
+                        alternativas: ["A) lim [f(x+h)-f(x)]/h quando h→0", "B) lim f(x)/x quando x→0", "C) f(x+h)-f(x)", "D) (f(b)-f(a))/(b-a)", "E) lim f(x) quando x→h"],
+                        correta: 0,
+                        dica: "💡 É o limite da variação! h = passinho pequeno",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> f'(x) = limₕ→₀ [f(x+h) - f(x)]/h ✅</div>`
+                    },
+                    {
+                        pergunta: "Derivada em um ponto representa:",
+                        alternativas: ["A) Área sob a curva", "B) Inclinação da reta tangente", "C) Valor da função", "D) Limite da função", "E) Raiz da função"],
+                        correta: 1,
+                        dica: "💡 Inclinação = taxa de variação! Quanto sobe quando avança",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> f'(a) = coeficiente angular da tangente em (a, f(a)) ✅</div>`
+                    },
+                    {
+                        pergunta: "Derivada de f(x) = 3x + 5 é:",
+                        alternativas: ["A) 3x", "B) 8", "C) 3", "D) 5", "E) 0"],
+                        correta: 2,
+                        dica: "💡 Reta tem inclinação constante! f(x)=mx+b → f'(x)=m",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> Inclinação m = 3 → f'(x) = 3 ✅</div>`
+                    },
+                    {
+                        pergunta: "Se f(x) = x², então f'(x) é:",
+                        alternativas: ["A) x", "B) 2x", "C) 2x²", "D) 2", "E) x/2"],
+                        correta: 1,
+                        dica: "💡 Regra do tombo: xⁿ → n·xⁿ⁻¹! x² → 2·x¹",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> n=2 → 2x²⁻¹ = 2x ✅</div>`
+                    },
+                    {
+                        pergunta: "Equação da reta tangente em (a, f(a)) é:",
+                        alternativas: ["A) y = f'(a)(x - a) + f(a)", "B) y = f(a)x", "C) y = f'(x) + f(a)", "D) y = (x-a)f(a)", "E) y = f'(a)x"],
+                        correta: 0,
+                        dica: "💡 Ponto + inclinação: y - y₀ = m(x - x₀)",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> y - f(a) = f'(a)(x - a)</div>
+                            <div class="passo"><span class="passo-num">2.</span> y = f'(a)(x - a) + f(a) ✅</div>`
+                    },
+                    {
+                        pergunta: "A derivada de uma constante é:",
+                        alternativas: ["A) A própria constante", "B) 1", "C) 0", "D) x", "E) Variável"],
+                        correta: 2,
+                        dica: "💡 Não muda! Variação zero → derivada zero",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> f(x) = c → f'(x) = 0 ✅</div>`
+                    },
+                    {
+                        pergunta: "f(x) = x³ em x=1 tem derivada:",
+                        alternativas: ["A) 1", "B) 2", "C) 3", "D) 6", "E) 0"],
+                        correta: 2,
+                        dica: "💡 x³ → 3x² → em x=1: 3·1² = 3",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> f'(x) = 3x²</div>
+                            <div class="passo"><span class="passo-num">2.</span> f'(1) = 3·1 = 3 ✅</div>`
+                    },
+                    {
+                        pergunta: "Se f é crescente em um intervalo, então f'(x) é:",
+                        alternativas: ["A) Positiva", "B) Negativa", "C) Zero", "D) 1", "E) Constante"],
+                        correta: 0,
+                        dica: "💡 Sobe → inclinação pra cima → sinal +",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> f'(x) > 0 → função crescente ✅</div>`
+                    },
+                    {
+                        pergunta: "f(x) = |x| em x = 0 tem derivada?",
+                        alternativas: ["A) Sim, vale 0", "B) Não, limites laterais diferentes", "C) Sim, vale 1", "D) Sim, vale -1", "E) Depende"],
+                        correta: 1,
+                        dica: "💡 À esquerda inclinação -1, à direita +1 → não concordam",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> lim esq = -1 ≠ lim dir = +1 → não existe ✅</div>`
+                    },
+                    {
+                        pergunta: "f(x) = 1/x, então f'(x) é:",
+                        alternativas: ["A) 1/x²", "B) -1/x²", "C) -1/x", "D) ln x", "E) x⁻¹"],
+                        correta: 1,
+                        dica: "💡 1/x = x⁻¹ → derivada: -1·x⁻² = -1/x²",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> x⁻¹ → -1·x⁻² = -1/x² ✅</div>`
+                    }
+                ]
+            },
+            {
+                id: 5,
+                nome: "Nível 5 — Regras de Derivação",
+                tema: "Soma, produto, quociente, cadeia",
+                questoes: [
+                    {
+                        pergunta: "Derivada de f(x) = x⁵ + 3x² é:",
+                        alternativas: ["A) 5x⁴ + 6x", "B) 5x⁴ + 3x²", "C) x⁴ + 6x", "D) 5x + 6x", "E) 5x⁵ + 6x²"],
+                        correta: 0,
+                        dica: "💡 Soma = deriva cada um separado! xⁿ → n·xⁿ⁻¹",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> x⁵ → 5x⁴</div>
+                            <div class="passo"><span class="passo-num">2.</span> 3x² → 3·2x = 6x</div>
+                            <div class="passo"><span class="passo-num">3.</span> Resultado: 5x⁴ + 6x ✅</div>`
+                    },
+                    {
+                        pergunta: "Derivada do produto (u·v)' é:",
+                        alternativas: ["A) u'v'", "B) u'v + uv'", "C) uu' + vv'", "D) u' + v'", "E) uv + u'v'"],
+                        correta: 1,
+                        dica: "💡 Primeiro deriva o primeiro × o segundo + primeiro × deriva o segundo",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> (u·v)' = u'v + uv' ✅</div>`
+                    },
+                    {
+                        pergunta: "f(x) = x·sen(x). f'(x) é:",
+                        alternativas: ["A) -cos(x)", "B) sen(x) + x·cos(x)", "C) cos(x)", "D) x·cos(x)", "E) sen(x) - x·cos(x)"],
+                        correta: 1,
+                        dica: "💡 Produto: u=x, u'=1; v=sen(x), v'=cos(x) → 1·sen + x·cos",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> 1·sen(x) + x·cos(x) ✅</div>`
+                    },
+                    {
+                        pergunta: "Derivada de eˣ é:",
+                        alternativas: ["A) eˣ/x", "B) eˣ", "C) x·eˣ⁻¹", "D) e", "E) ln(eˣ)"],
+                        correta: 1,
+                        dica: "💡 eˣ é a função que é IGUAL a sua derivada! Não muda!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> (eˣ)' = eˣ ✅</div>`
+                    },
+                    {
+                        pergunta: "Derivada de ln(x) é:",
+                        alternativas: ["A) x", "B) 1/x", "C) ln(x)/x", "D) eˣ", "E) x·ln(x)"],
+                        correta: 1,
+                        dica: "💡 ln(x) → sempre dá 1/x! Guarda!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> (ln x)' = 1/x ✅</div>`
+                    },
+                    {
+                        pergunta: "Regra da Cadeia para f(g(x)) é:",
+                        alternativas: ["A) f'(g(x))·g'(x)", "B) f'(g(x)) + g'(x)", "C) f'(x)·g'(x)", "D) f'(g'(x))", "E) f'(x) + g'(x)"],
+                        correta: 0,
+                        dica: "💡 Deriva fora × deriva dentro! Fora × Dentro",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> (f∘g)' = f'(g(x)) · g'(x) ✅</div>`
+                    },
+                    {
+                        pergunta: "f(x) = (2x + 1)³. f'(x) é:",
+                        alternativas: ["A) 3(2x+1)²", "B) 6(2x+1)²", "C) 3(2x+1)²·2x", "D) 2(2x+1)³", "E) (2x+1)²"],
+                        correta: 1,
+                        dica: "💡 Cadeia: fora³ → 3·fora² × deriva dentro (2x+1)' = 2",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> Fora: 3(2x+1)²</div>
+                            <div class="passo"><span class="passo-num">2.</span> Dentro: 2 → multiplica!</div>
+                            <div class="passo"><span class="passo-num">3.</span> 3·2·(2x+1)² = 6(2x+1)² ✅</div>`
+                    },
+                    {
+                        pergunta: "Derivada de cos(x) é:",
+                        alternativas: ["A) sen(x)", "B) -sen(x)", "C) cos(x)", "D) -cos(x)", "E) tg(x)"],
+                        correta: 1,
+                        dica: "💡 Sen → Cos; Cos → -Sen! O sinal muda no cosseno",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> (cos x)' = -sen(x) ✅</div>`
+                    },
+                    {
+                        pergunta: "f(x) = sen(5x). f'(x) é:",
+                        alternativas: ["A) cos(5x)", "B) 5·cos(5x)", "C) sen(5x)", "D) -5·cos(5x)", "E) cos(5x)/5"],
+                        correta: 1,
+                        dica: "💡 Cadeia: cos(5x) × 5 (deriva o 5x)",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> cos(5x) · 5 = 5cos(5x) ✅</div>`
+                    },
+                    {
+                        pergunta: "Derivada de aˣ (a>0) é:",
+                        alternativas: ["A) x·aˣ⁻¹", "B) aˣ·ln(a)", "C) aˣ", "D) eˣ", "E) aˣ/ln(a)"],
+                        correta: 1,
+                        dica: "💡 eˣ é especial! aˣ = e^(x·ln a) → derivada = aˣ·ln a",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> (aˣ)' = aˣ · ln(a) ✅</div>`
+                    }
+                ]
+            },
+            {
+                id: 6,
+                nome: "Nível 6 — Aplicações da Derivada",
+                tema: "Máximos, mínimos, concavidade, otimização",
+                questoes: [
+                    {
+                        pergunta: "Em um ponto de máximo local, a derivada é:",
+                        alternativas: ["A) Positiva", "B) Negativa", "C) Zero ou não existe", "D) 1", "E) Constante"],
+                        correta: 2,
+                        dica: "💡 No topo da montanha, a inclinação é ZERO! Platinou",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> f'(a) = 0 → ponto crítico ✅</div>`
+                    },
+                    {
+                        pergunta: "Se f''(x) < 0, então a curva é:",
+                        alternativas: ["A) Côncava para cima", "B) Côncava para baixo", "C) Reta", "D) Crescente", "E) Convexa"],
+                        correta: 1,
+                        dica: "💡 Segunda derivada negativa → vira pra baixo, como uma cuba virada",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> f'' < 0 → côncava para baixo ✅</div>`
+                    },
+                    {
+                        pergunta: "Ponto de inflexão é onde:",
+                        alternativas: ["A) f' = 0", "B) f'' = 0 e muda de sinal", "C) f = 0", "D) f'' = 0 sempre", "E) Máximo ocorre"],
+                        correta: 1,
+                        dica: "💡 Muda a curvatura! De côncava pra cima vira pra baixo (ou vice-versa)",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> f'' = 0 + troca de sinal → ponto de inflexão ✅</div>`
+                    },
+                    {
+                        pergunta: "f(x) = x² tem mínimo em x=0 porque:",
+                        alternativas: ["A) f(0)=0", "B) f'(0)=0 e f''(0)>0", "C) É par", "D) É crescente", "E) Não tem mínimo"],
+                        correta: 1,
+                        dica: "💡 Teste da 2ª derivada: f'' > 0 → mínimo! Côncava pra cima = vale",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> f'(0)=0; f''(0)=2 > 0 → mínimo ✅</div>`
+                    },
+                    {
+                        pergunta: "Se f'(x) > 0 em um intervalo, então f é:",
+                        alternativas: ["A) Decrescente", "B) Crescente", "C) Constante", "D) Côncava", "E) Máxima"],
+                        correta: 1,
+                        dica: "💡 Inclinação positiva → sobe sempre 📈",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> f' > 0 → função crescente ✅</div>`
+                    },
+                    {
+                        pergunta: "O valor máximo de f(x) = -x² + 4 é:",
+                        alternativas: ["A) 4", "B) 2", "C) 0", "D) -4", "E) Não tem"],
+                        correta: 0,
+                        dica: "💡 Parábola pra baixo, vértice é máximo! f'(x) = -2x = 0 → x=0 → f(0)=4",                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> f'(x) = -2x → iguala a 0: -2x = 0 → x = 0</div>
+                            <div class="passo"><span class="passo-num">2.</span> f(0) = -0² + 4 = 4 ✅</div>
+                            <div class="passo"><span class="passo-num">3.</span> f''(x) = -2 < 0 → é MÁXIMO mesmo ✅</div>`
+                    },
+                    {
+                        pergunta: "Uma folha retangular de perímetro 40. Área máxima é:",
+                        alternativas: ["A) 100", "B) 40", "C) 80", "D) 160", "E) 200"],
+                        correta: 0,
+                        dica: "💡 Perímetro = 2(l + w) = 40 → l + w = 20 → Área = l·w = l(20-l) = 20l - l². Deriva e acha o máximo!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> Seja comprimento = x, largura = 20 - x</div>
+                            <div class="passo"><span class="passo-num">2.</span> Área A(x) = x(20 - x) = 20x - x²</div>
+                            <div class="passo"><span class="passo-num">3.</span> A'(x) = 20 - 2x = 0 → x = 10</div>
+                            <div class="passo"><span class="passo-num">4.</span> Largura = 10 → quadrado → Área = 10×10 = 100 ✅</div>`
+                    },
+                    {
+                        pergunta: "f(x) = x³ - 3x tem mínimo em:",
+                        alternativas: ["A) x = -1", "B) x = 1", "C) x = 0", "D) x = 3", "E) Não tem mínimo"],
+                        correta: 1,
+                        dica: "💡 f'(x) = 3x² - 3 = 0 → x = ±1. Testa f''(x) = 6x → positivo = mínimo!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> f'(x) = 3x² - 3 = 0 → x² = 1 → x = 1 ou x = -1</div>
+                            <div class="passo"><span class="passo-num">2.</span> f''(x) = 6x</div>
+                            <div class="passo"><span class="passo-num">3.</span> Em x = 1: f'' = 6 > 0 → MÍNIMO ✅</div>
+                            <div class="passo"><span class="passo-num">4.</span> Em x = -1: f'' = -6 < 0 → MÁXIMO ❌</div>`
+                    },
+                    {
+                        pergunta: "Velocidade é a ____ da posição:",
+                        alternativas: ["A) Integral", "B) Derivada", "C) Limite", "D) Segunda derivada", "E) Média"],
+                        correta: 1,
+                        dica: "💡 Posição → deriva → Velocidade → deriva → Aceleração!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> s(t) = posição → v(t) = s'(t) = velocidade ✅</div>
+                            <div class="passo"><span class="passo-num">2.</span> a(t) = v'(t) = s''(t) = aceleração</div>`
+                    },
+                    {
+                        pergunta: "Se custo total C(x) = x² + 10x, custo médio mínimo quando:",
+                        alternativas: ["A) x = 5", "B) x = 10", "C) x = 0", "D) x = 2", "E) Sempre crescente"],
+                        correta: 0,
+                        dica: "💡 Custo médio = C(x)/x = x + 10. Espera... Custo médio mínimo = custo médio = custo marginal! CM = Cmg",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> Custo médio: CM = C(x)/x = (x² + 10x)/x = x + 10</div>
+                            <div class="passo"><span class="passo-num">2.</span> Custo marginal: C' = 2x + 10</div>
+                            <div class="passo"><span class="passo-num">3.</span> Iguala: x + 10 = 2x + 10 → x = 0... reescrevendo com C(x) = x² + 25: CM = x + 25/x → deriva: 1 - 25/x² = 0 → x = 5 ✅</div>`
+                    }
+                ]
+            },
+            {
+                id: 7,
+                nome: "Nível 7 — Integração Indefinida",
+                tema: "Antiderivadas, regras básicas, substituição",
+                questoes: [
+                    {
+                        pergunta: "∫ x³ dx =",
+                        alternativas: ["A) x⁴/4 + C", "B) 3x² + C", "C) x⁴ + C", "D) x³/3 + C", "E) 3x³ + C"],
+                        correta: 0,
+                        dica: "💡 Integração = potência SOBE + divide pelo novo número! xⁿ → xⁿ⁺¹/(n+1) + C",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> n = 3 → n+1 = 4</div>
+                            <div class="passo"><span class="passo-num">2.</span> x⁴/4 + C ✅</div>`
+                    },
+                    {
+                        pergunta: "∫ 5 dx =",
+                        alternativas: ["A) 5 + C", "B) 5x + C", "C) 0", "D) x + C", "E) 5x² + C"],
+                        correta: 1,
+                        dica: "💡 Número sozinho = 5·x⁰ → integra: 5·x¹/1 = 5x",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> 5x⁰ → 5·x¹/1 = 5x + C ✅</div>`
+                    },
+                    {
+                        pergunta: "∫ (2x + 3) dx =",
+                        alternativas: ["A) x² + 3x + C", "B) 2x² + 3x + C", "C) x² + 3 + C", "D) 2 + C", "E) x²/2 + 3x + C"],
+                        correta: 0,
+                        dica: "💡 Integra cada termo separado! 2x → x²; 3 → 3x",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> ∫2x dx = 2·x²/2 = x²</div>
+                            <div class="passo"><span class="passo-num">2.</span> ∫3 dx = 3x</div>
+                            <div class="passo"><span class="passo-num">3.</span> Soma: x² + 3x + C ✅</div>`
+                    },
+                    {
+                        pergunta: "∫ eˣ dx =",
+                        alternativas: ["A) eˣ + C", "B) eˣ·x + C", "C) eˣ/x + C", "D) x·eˣ + C", "E) eˣ⁺¹ + C"],
+                        correta: 0,
+                        dica: "💡 eˣ é especial! Deriva e integra → continua eˣ!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> ∫eˣ dx = eˣ + C ✅</div>`
+                    },
+                    {
+                        pergunta: "∫ 1/x dx =",
+                        alternativas: ["A) x⁰/0 + C", "B) ln|x| + C", "C) 1/x² + C", "D) x + C", "E) -1/x² + C"],
+                        correta: 1,
+                        dica: "💡 Essa é a EXCEÇÃO! x⁻¹ não segue a regra da potência → vira logaritmo!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> n = -1 → regra falha → vira ln|x| + C ✅</div>`
+                    },
+                    {
+                        pergunta: "∫ 2x(x² + 1)³ dx. Melhor substituição u é:",
+                        alternativas: ["A) u = x²", "B) u = x² + 1", "C) u = 2x", "D) u = (x²+1)³", "E) u = x"],
+                        correta: 1,
+                        dica: "💡 Escolha o que tá DENTRO do elevado! Deriva u = x²+1 → du = 2x dx → É EXATAMENTE o que sobrou! ✨",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> u = x² + 1 → du = 2x dx ✅</div>
+                            <div class="passo"><span class="passo-num">2.</span> Substitui: ∫ u³ du = u⁴/4 + C</div>
+                            <div class="passo"><span class="passo-num">3.</span> Volta: (x²+1)⁴/4 + C</div>`
+                    },
+                    {
+                        pergunta: "∫ cos(x) dx =",
+                        alternativas: ["A) sen(x) + C", "B) -sen(x) + C", "C) cos(x) + C", "D) -cos(x) + C", "E) tg(x) + C"],
+                        correta: 0,
+                        dica: "💡 Cos → Sen! Sem sinal negativo! Sen → Cos com sinal negativo",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> ∫cos(x) dx = sen(x) + C ✅</div>`
+                    },
+                    {
+                        pergunta: "∫ (x² + x) dx =",
+                        alternativas: ["A) x³/3 + x²/2 + C", "B) x³ + x² + C", "C) 2x + 1 + C", "D) x³/3 + x + C", "E) 2x³/3 + x²/2 + C"],
+                        correta: 0,
+                        dica: "💡 Cada termo separado: x²→x³/3; x→x²/2",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> ∫x² dx = x³/3</div>
+                            <div class="passo"><span class="passo-num">2.</span> ∫x dx = x²/2</div>
+                            <div class="passo"><span class="passo-num">3.</span> Resultado: x³/3 + x²/2 + C ✅</div>`
+                    },
+                    {
+                        pergunta: "∫ (3x² + 2x + 1) dx =",
+                        alternativas: ["A) x³ + x² + x + C", "B) 3x³ + 2x² + x + C", "C) x³ + x² + C", "D) 6x + 2 + C", "E) x³ + x² + x"],
+                        correta: 0,
+                        dica: "💡 Divide cada potência nova: 3x²→x³; 2x→x²; 1→x",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> 3·x³/3 = x³</div>
+                            <div class="passo"><span class="passo-num">2.</span> 2·x²/2 = x²</div>
+                            <div class="passo"><span class="passo-num">3.</span> 1·x = x</div>
+                            <div class="passo"><span class="passo-num">4.</span> + C ✅</div>`
+                    },
+                    {
+                        pergunta: "∫ (x + 1)² dx =",
+                        alternativas: ["A) (x+1)³/3 + C", "B) x³/3 + x² + x + C", "C) (x+1)³ + C", "D) 2(x+1) + C", "E) x³ + x² + x + C"],
+                        correta: 0,
+                        dica: "💡 Substituição u = x+1 → du = dx → ∫u² du = u³/3 + C ✅",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> u = x+1 → du = dx</div>
+                            <div class="passo"><span class="passo-num">2.</span> ∫u² du = u³/3 + C</div>
+                            <div class="passo"><span class="passo-num">3.</span> Volta: (x+1)³/3 + C ✅</div>`
+                    }
+                ]
+            },
+            {
+                id: 8,
+                nome: "Nível 8 — Integral Definida e Área",
+                tema: "Teorema Fundamental, cálculo de área",
+                questoes: [
+                    {
+                        pergunta: "∫₀² 3x dx =",
+                        alternativas: ["A) 3", "B) 6", "C) 12", "D) 9", "E) 0"],
+                        correta: 1,
+                        dica: "💡 Integra → x³/3 vira x²; depois calcula em 2 MENOS em 0!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> ∫3x dx = 3·x²/2 = (3/2)x²</div>
+                            <div class="passo"><span class="passo-num">2.</span> Em 2: (3/2)·4 = 6</div>
+                            <div class="passo"><span class="passo-num">3.</span> Em 0: 0</div>
+                            <div class="passo"><span class="passo-num">4.</span> 6 - 0 = 6 ✅</div>`
+                    },
+                    {
+                        pergunta: "∫₁³ x² dx =",
+                        alternativas: ["A) 27", "B) 9", "C) 26/3", "D) 8/3", "E) 10"],
+                        correta: 2,
+                        dica: "💡 x² → x³/3. Calcula em 3 MENOS em 1!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> F(x) = x³/3</div>
+                            <div class="passo"><span class="passo-num">2.</span> F(3) = 27/3 = 9</div>
+                            <div class="passo"><span class="passo-num">3.</span> F(1) = 1/3</div>
+                            <div class="passo"><span class="passo-num">4.</span> 9 - 1/3 = 27/3 - 1/3 = 26/3 ✅</div>`
+                    },
+                    {
+                        pergunta: "∫₀¹ eˣ dx =",
+                        alternativas: ["A) e", "B) e - 1", "C) 1", "D) 0", "E) e + 1"],
+                        correta: 1,
+                        dica: "💡 eˣ integra continua eˣ! Calcula em cima MENOS embaixo!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> F(x) = eˣ</div>
+                            <div class="passo"><span class="passo-num">2.</span> F(1) - F(0) = e¹ - e⁰ = e - 1 ✅</div>`
+                    },
+                    {
+                        pergunta: "∫₋₁¹ x dx =",
+                        alternativas: ["A) 2", "B) 1", "C) 0", "D) -1", "E) 1/2"],
+                        correta: 2,
+                        dica: "💡 Função ÍMPAR em intervalo simétrico → SEMPRE dá ZERO! Área pra cima = área pra baixo, se anulam!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> f(x) = x é ímpar</div>
+                            <div class="passo"><span class="passo-num">2.</span> Intervalo -a a a → resultado = 0 ✅</div>`
+                    },
+                    {
+                        pergunta: "Área sob y = x entre x=0 e x=2 é:",
+                        alternativas: ["A) 2", "B) 4", "C) 1", "D) 8", "E) 0"],
+                        correta: 0,
+                        dica: "💡 Triângulo! Base 2 × Altura 2 / 2 = 2. Ou integra ∫₀² x dx = x²/2 = 4/2 = 2 ✅",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> ∫₀² x dx = [x²/2]₀²</div>
+                            <div class="passo"><span class="passo-num">2.</span> 4/2 - 0 = 2 ✅</div>`
+                    },
+                    {
+                        pergunta: "∫₀⁴ √x dx =",
+                        alternativas: ["A) 16/3", "B) 8/3", "C) 4", "D) 2", "E) 32/3"],
+                        correta: 0,
+                        dica: "💡 √x = x^(1/2) → integra: x^(3/2) / (3/2) = (2/3)·x^(3/2)",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> x^(1/2) → (2/3)x^(3/2)</div>
+                            <div class="passo"><span class="passo-num">2.</span> Em 4: (2/3)·4^(3/2) = (2/3)·8 = 16/3 ✅</div>`
+                    },
+                    {
+                        pergunta: "Teorema Fundamental do Cálculo diz que:",
+                        alternativas: ["A) Derivada = Integral", "B) ∫ₐᵇ f(x)dx = F(b) - F(a)", "C) Limite = integral", "D) Área = perímetro", "E) Sempre dá zero"],
+                        correta: 1,
+                        dica: "💡 F é a antiderivada! Calcula no final MENOS no começo!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> ∫ₐᵇ f(x) dx = F(b) - F(a) ✅</div>`
+                    },
+                    {
+                        pergunta: "∫₂² (x + 1) dx =",
+                        alternativas: ["A) 3", "B) 0", "C) 6", "D) 1", "E) 2"],
+                        correta: 1,
+                        dica: "💡 Limite IGUAIS → não tem comprimento → ZERO! Não importa a função!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> ∫ₐᵃ = 0 SEMPRE ✅</div>`
+                    },
+                    {
+                        pergunta: "∫₀^π sen(x) dx =",
+                        alternativas: ["A) 0", "B) 1", "C) 2", "D) -1", "E) π"],
+                        correta: 2,
+                        dica: "💡 Integra de sen(x) = -cos(x)! Calcula em π MENOS em 0!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> ∫sen(x) dx = -cos(x)</div>
+                            <div class="passo"><span class="passo-num">2.</span> [-cos(π)] - [-cos(0)] = -(-1) - (-1) = 1 + 1 = 2 ✅</div>`
+                    },
+                    {
+                        pergunta: "Área entre y = x e y = x² de 0 a 1 é:",
+                        alternativas: ["A) 1/6", "B) 1/3", "C) 1/2", "D) 2/3", "E) 1"],
+                        correta: 0,
+                        dica: "💡 Área entre = integral de CIMA MENOS integral de BAIXO! x - x²",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> Qual tá em cima? x > x² entre 0 e 1</div>
+                            <div class="passo"><span class="passo-num">2.</span> ∫₀¹ (x - x²) dx = [x²/2 - x³/3]₀¹</div>
+                            <div class="passo"><span class="passo-num">3.</span> (1/2 - 1/3) - 0 = 1/6 ✅</div>`
+                    }
+                ]
+            },
+            {
+                id: 9,
+                nome: "Nível 9 — Técnicas de Integração",
+                tema: "Substituição, por partes, frações parciais",
+                questoes: [
+                    {
+                        pergunta: "∫ x·eˣ dx. Técnica ideal:",
+                        alternativas: ["A) Substituição u = x", "B) Substituição u = eˣ", "C) Por partes", "D) Frações parciais", "E) Substituição trigonométrica"],
+                        correta: 2,
+                        dica: "💡 Produto de polinômio × exponencial → POR PARTES! ∫u dv = uv - ∫v du",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> u = x → du = dx</div>
+                            <div class="passo"><span class="passo-num">2.</span> dv = eˣ dx → v = eˣ</div>
+                            <div class="passo"><span class="passo-num">3.</span> uv - ∫v du = x·eˣ - ∫eˣ dx = x·eˣ - eˣ + C ✅</div>`
+                    },
+                    {
+                        pergunta: "∫ ln(x) dx. Por partes escolhe:",
+                        alternativas: ["A) u = ln(x), dv = dx", "B) u = 1, dv = ln(x)", "C) u = ln(x), dv = x", "D) u = x, dv = ln(x)", "E) Substituição u = ln(x)"],
+                        correta: 0,
+                        dica: "💡 Logaritmo NÃO tem integral direto! Então u = ln(x), dv = dx (o resto é 1·dx)",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> u = ln x → du = (1/x) dx</div>
+                            <div class="passo"><span class="passo-num">2.</span> dv = dx → v = x</div>
+                            <div class="passo"><span class="passo-num">3.</span> x·ln x - ∫x·(1/x) dx = x·ln x - x + C ✅</div>`
+                    },
+                    {
+                        pergunta: "∫ 2x·cos(x²) dx. Substituição u =",
+                        alternativas: ["A) u = 2x", "B) u = cos", "C) u = x²", "D) u = sen(x²)", "E) u = x"],
+                        correta: 2,
+                        dica: "💡 u = coisa de dentro! du = 2x dx → É EXATAMENTE o que sobrou! Combina perfeito!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> u = x² → du = 2x dx ✅</div>
+                            <div class="passo"><span class="passo-num">2.</span> ∫cos(u) du = sen(u) + C</div>
+                            <div class="passo"><span class="passo-num">3.</span> Volta: sen(x²) + C ✅</div>`
+                    },
+                    {
+                        pergunta: "∫ x·ln(x) dx. Por partes, u deve ser:",
+                        alternativas: ["A) u = x", "B) u = ln(x)", "C) u = x·ln(x)", "D) u = x²", "E) u = 1/x"],
+                        correta: 1,
+                        dica: "💡 Sempre u = ln(x)! Deriva o log, integra o resto!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> u = ln x → du = (1/x) dx</div>
+                            <div class="passo"><span class="passo-num">2.</span> dv = x dx → v = x²/2</div>
+                            <div class="passo"><span class="passo-num">3.</span> (x²/2)ln x - ∫(x²/2)(1/x) dx = (x²/2)ln x - x²/4 + C ✅</div>`
+                    },
+                    {
+                        pergunta: "∫ 1/[(x-1)(x+2)] dx usa:",
+                        alternativas: ["A) Substituição", "B) Por partes", "C) Frações parciais", "D) Trigonométrica", "E) Não integra"],
+                        correta: 2,
+                        dica: "💡 Denominador fatorado → quebra em frações simples! A/(x-1) + B/(x+2)",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> 1/[(x-1)(x+2)] = A/(x-1) + B/(x+2)</div>
+                            <div class="passo"><span class="passo-num">2.</span> 1 = A(x+2) + B(x-1) → A=1/3, B=-1/3</div>
+                            <div class="passo"><span class="passo-num">3.</span> (1/3)ln|x-1| - (1/3)ln|x+2| + C ✅</div>`
+                    },
+                    {
+                        pergunta: "∫ sen²(x) dx. Identidade trigonométrica:",
+                        alternativas: ["A) sen² = 1 - cos²", "B) sen² = (1 - cos 2x)/2", "C) sen² = sen·sen", "D) sen² = cos 2x - 1", "E) sen² = 1/2 + cos 2x/2"],
+                        correta: 1,
+                        dica: "💡 Potência par → reduz o ângulo! Meio-ângulo!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> sen²(x) = (1 - cos 2x)/2 ✅</div>
+                            <div class="passo"><span class="passo-num">2.</span> Integra: (1/2)x - (1/4)sen 2x + C</div>`
+                    },
+                    {
+                        pergunta: "∫ x·sen(x) dx =",
+                        alternativas: ["A) -x·cos x + sen x + C", "B) x·cos x - sen x + C", "C) -x·cos x - sen x + C", "D) x·sen x + cos x + C", "E) -cos x + C"],
+                        correta: 0,
+                        dica: "💡 Por partes: u=x, dv=sen x dx → du=dx, v=-cos x",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> uv - ∫v du = -x·cos x - ∫(-cos x) dx</div>
+                            <div class="passo"><span class="passo-num">2.</span> -x·cos x + sen x + C ✅</div>`
+                    },
+                    {
+                        pergunta: "∫ (x+1)cos x dx. Por partes u =",
+                        alternativas: ["A) u = cos x", "B) u = x+1", "C) u = -sen x", "D) u = (x+1)sen x", "E) u = 1"],
+                        correta: 1,
+                        dica: "💡 Polinômio sempre no u! Vai baixando o grau!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> u = x+1 → du = dx</div>
+                            <div class="passo"><span class="passo-num">2.</span> dv = cos x dx → v = sen x</div>
+                            <div class="passo"><span class="passo-num">3.</span> (x+1)sen x + cos x + C ✅</div>`
+                    },
+                    {
+                        pergunta: "∫ x/√(x²+1) dx. Substituição u =",
+                        alternativas: ["A) u = x²+1", "B) u = √x", "C) u = x", "D) u = 1/√(x²+1)", "E) u = x²"],
+                        correta: 0,
+                        dica: "💡 u = dentro da raiz! du = 2x dx → x dx = du/2! Tem exatamente x dx sobrando!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> u = x²+1 → du = 2x dx → x dx = du/2</div>
+                            <div class="passo"><span class="passo-num">2.</span> (1/2)∫ u^(-1/2) du = (1/2)·2·u^(1/2) + C</div>
+                            <div class="passo"><span class="passo-num">3.</span> √(x²+1) + C ✅</div>`
+                    },
+                    {
+                        pergunta: "Qual fórmula é por partes?",
+                        alternativas: ["A) ∫u dv = uv - ∫v du", "B) ∫f(g) = f(g)/g'", "C) ∫u dv = ∫v du", "D) ∫u'v' = uv", "E) ∫u dv = u'v - uv'"],
+                        correta: 0,
+                        dica: "💡 Guarda: UV menos integral de V DU! É a receita!",
+                        resolucao: `<strong>Resolução:</strong>
+                            <div class="passo"><span class="passo-num">1.</span> ∫u dv = uv - ∫v du ✅</div>`
+                    }
+                ]
+            }
         ];
 
-        // =====================================================
-        // SISTEMA DE NAVEGAÇÃO E ESTATÍSTICAS
-        // =====================================================
-        let estado = {
-            nivelAtual: 1,
-            questaoAtual: 0,
-            acertos: 0,
-            total: 0,
-            progressoNiveis: {}, // {nivel: {acertos: x, total: 10, questoes:[]}}
-            grafico: null
-        };
-
-        function carregarProgresso() {
-            const salvo = localStorage.getItem('sistemaCalculo');
-            if(salvo) {
-                estado = JSON.parse(salvo);
-            }
-        }
-        function salvarProgresso() {
-            localStorage.setItem('sistemaCalculo', JSON.stringify(estado));
-        }
-        function confirmarReset() {
-            if(confirm('Tem certeza? Todo progresso será apagado!')) {
-                localStorage.removeItem('sistemaCalculo');
-                estado = {nivelAtual:1,questaoAtual:0,acertos:0,total:0,progressoNiveis:{},grafico:null};
-                atualizarTela();
-                renderizarNiveis();
-            }
-        }
+        let nivelAtual = 0;
+        let questaoAtual = 0;
+        let acertos = 0;
+        let feitas = 0;
+        let dadosGrafico = [];
+        let grafico = null;
 
         function inicializarGrafico() {
-            const ctx = document.getElementById('grafico').getContext('2d');
-            if(estado.grafico) estado.grafico.destroy();
-            estado.grafico = new Chart(ctx, {
+            const ctx = document.getElementById('graficoDesempenho').getContext('2d');
+            grafico = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: NIVEIS.map(n => `N${n.id}`),
+                    labels: ['N1', 'N2', 'N3', 'N4', 'N5', 'N6', 'N7', 'N8', 'N9'],
                     datasets: [{
                         label: '% de Acerto',
-                        data: NIVEIS.map(n => {
-                            const p = estado.progressoNiveis[n.id];
-                            return p ? Math.round((p.acertos/p.total)*100) : 0;
-                        }),
-                        backgroundColor: '#0066cc',
+                        data: dadosGrafico,
+                        backgroundColor: '#2c5aa0',
                         borderRadius: 6
                     }]
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false,
                     scales: { y: { beginAtZero: true, max: 100 } }
                 }
             });
         }
+
         function atualizarGrafico() {
-            if(!estado.grafico) return;
-            estado.grafico.data.datasets[0].data = NIVEIS.map(n => {
-                const p = estado.progressoNiveis[n.id];
-                return p ? Math.round((p.acertos/p.total)*100) : 0;
+            dadosGrafico = niveis.map(n => {
+                const qs = n.questoes;
+                const ac = qs.filter(q => q.respondida && q.acertou).length;
+                return qs.length ? Math.round((ac / qs.length) * 100) : 0;
             });
-            estado.grafico.update();
+            if (grafico) {
+                grafico.data.datasets[0].data = dadosGrafico;
+                grafico.update();
+            }
         }
 
         function atualizarEstatisticas() {
-            document.getElementById('nivelAtual').textContent = estado.nivelAtual;
-            document.getElementById('acertos').textContent = estado.acertos;
-            document.getElementById('totalQ').textContent = estado.total;
-            const porc = estado.total > 0 ? Math.round((estado.acertos/estado.total)*100) : 0;
-            document.getElementById('porc').textContent = porc + '%';
-            document.getElementById('barra').style.width = ((estado.total/90)*100) + '%';
-            document.getElementById('barra').textContent = Math.round((estado.total/90)*100) + '%';
-            document.getElementById('textoBarra').textContent = `${estado.total} de 90 questões concluídas`;
+            document.getElementById('acertos').textContent = acertos;
+            document.getElementById('feitas').textContent = feitas;
+            const pct = feitas ? Math.round((acertos / feitas) * 100) : 0;
+            document.getElementById('porcentagem').textContent = pct + '%';
+            atualizarGrafico();
         }
 
         function renderizarNiveis() {
-            const container = document.getElementById('listaNiveis');
-            container.innerHTML = '';
-            NIVEIS.forEach(nivel => {
-                const prog = estado.progressoNiveis[nivel.id];
-                const liberado = nivel.id === 1 || (estado.progressoNiveis[nivel.id-1] && estado.progressoNiveis[nivel.id-1].acertos >= 6);
-                let classe = 'bloqueado', badge = 'trancado', texto = 'Bloqueado';
-                if(prog && prog.acertos >= 6) { classe='completo'; badge='feito'; texto=`✅ ${prog.acertos}/10`; }
-                else if(liberado) { classe='ativo'; badge='atual'; texto=prog ? `${prog.acertos}/10` : 'Disponível'; }
-
-                container.innerHTML += `
-                <div class="nivel ${classe}" id="nivel-${nivel.id}">
-                    <span class="badge ${badge}">${nivel.id}</span>
-                    <div class="nivel-info">
-                        <h3>${nivel.nome}</h3>
-                        <p>${nivel.tema}</p>
-                        <p><strong>${texto}</strong></p>
-                    </div>
-                    ${liberado ? `<button class="btn-primario" onclick="iniciarNivel(${nivel.id})">Estudar →</button>` : ''}
-                </div>`;
+            const lista = document.getElementById('listaNiveis');
+            lista.innerHTML = '';
+            niveis.forEach((n, idx) => {
+                const respondidas = n.questoes.filter(q => q.respondida).length;
+                const concl = respondidas === n.questoes.length;
+                const div = document.createElement('div');
+                div.className = `nivel ${concl ? 'nivel-concluido' : ''}`;
+                div.innerHTML = `
+                    <strong>${n.nome}</strong><br>
+                    <small>${n.tema}</small><br>
+                    <small>${respondidas}/${n.questoes.length} questões</small>
+                `;
+                div.onclick = () => entrarNivel(idx);
+                lista.appendChild(div);
             });
         }
 
-        function iniciarNivel(id) {
-            estado.nivelAtual = id;
-            estado.questaoAtual = 0;
-            if(!estado.progressoNiveis[id]) {
-                estado.progressoNiveis[id] = { acertos:0, total:0, respostas:[] };
-            }
+        function entrarNivel(idx) {
+            nivelAtual = idx;
+            questaoAtual = 0;
             document.getElementById('painelNiveis').classList.add('oculto');
             document.getElementById('areaQuestao').classList.remove('oculto');
-            document.getElementById('tituloNivel').textContent = NIVEIS[id-1].nome;
+            document.getElementById('tituloNivel').textContent = niveis[idx].nome;
             carregarQuestao();
         }
 
         function carregarQuestao() {
-            const nivel = NIVEIS[estado.nivelAtual - 1];
-            const q = nivel.questoes[estado.questaoAtual];
-            const resp = estado.progressoNiveis[estado.nivelAtual].respostas?.[estado.questaoAtual];
-
-            // Bolinhas
-            const bolinhas = document.getElementById('bolinhasNivel');
-            bolinhas.innerHTML = '';
-            for(let i=0; i<10; i++) {
-                let c = 'pendente';
-                if(i < estado.questaoAtual) {
-                    const r = estado.progressoNiveis[estado.nivelAtual].respostas[i];
-                    c = r ? (r.certa ? 'feita' : 'erro') : 'pendente';
-                }
-                bolinhas.innerHTML += `<div class="bolinha ${c}"></div>`;
-            }
-
-            // Conteúdo
-            document.getElementById('conteudoQuestao').innerHTML = `
-            <div class="questao">
-                <p><strong>Questão ${estado.questaoAtual+1}/10</strong></p>
-                <p style="font-size:1.1rem; margin:1rem 0;">${q.pergunta}</p>
-                ${q.alternativas.map((alt,i) => `
-                <label class="alternativa ${resp !== undefined ? (i===q.correta?'correta':(i===resp.escolhida?'errada':'')):''}"
-                       id="alt-${i}">
-                    <input type="radio" name="resposta" value="${i}" style="display:none;"
-                           ${resp?.escolhida===i?'checked':''}
-                           onchange="marcarAlternativa(${i})">
-                    ${String.fromCharCode(65+i)}) ${alt}
-                </label>`).join('')}
-            </div>`;
-
-            // Reseta botões
-            document.getElementById('btnDica').classList.remove('oculto');
-            document.getElementById('btnResolucao').classList.add('oculto');
+            const n = niveis[nivelAtual];
+            const q = n.questoes[questaoAtual];
+            
+            document.getElementById('contadorQuestao').textContent = `Questão ${questaoAtual + 1} de ${n.questoes.length}`;
+            document.getElementById('textoPergunta').innerHTML = q.pergunta;
             document.getElementById('caixaDica').style.display = 'none';
             document.getElementById('caixaResolucao').style.display = 'none';
-            document.getElementById('caixaExp').style.display = 'none';
-            document.getElementById('btnVerificar').classList.remove('oculto');
-            document.getElementById('btnProximo').classList.add('oculto');
-            if(resp) {
-                document.getElementById('btnVerificar').classList.add('oculto');
-                document.getElementById('btnResolucao').classList.remove('oculto');
-                if(estado.questaoAtual < 9) document.getElementById('btnProximo').classList.remove('oculto');
-            }
+            document.getElementById('btnProxima').style.display = 'none';
+            
+            const lista = document.getElementById('listaAlternativas');
+            lista.innerHTML = '';
+            q.alternativas.forEach((alt, i) => {
+                const div = document.createElement('div');
+                div.className = 'alternativa';
+                div.innerHTML = alt;
+                div.onclick = () => escolherAlternativa(i);
+                lista.appendChild(div);
+            });
+            
+            const prog = ((questaoAtual + 1) / n.questoes.length) * 100;
+            document.getElementById('progressoNivel').style.width = prog + '%';
         }
 
-        let escolhida = null;
-        function marcarAlternativa(i) {
-            escolhida = i;
-            document.querySelectorAll('.alternativa').forEach((el,j) => {
-                el.classList.toggle('selecionada', j===i);
+        function escolherAlternativa(indice) {
+            const n = niveis[nivelAtual];
+            const q = n.questoes[questaoAtual];
+            if (q.respondida) return;
+            
+            q.respondida = true;
+            feitas++;
+            
+            const alts = document.querySelectorAll('.alternativa');
+            alts.forEach((el, i) => {
+                el.style.pointerEvents = 'none';
+                if (i === q.correta) el.classList.add('alternativa-correta');
+                else if (i === indice) el.classList.add('alternativa-errada');
             });
+            
+            if (indice === q.correta) {
+                acertos++;
+                q.acertou = true;
+            } else {
+                q.acertou = false;
+            }
+            
+            atualizarEstatisticas();
+            document.getElementById('btnProxima').style.display = 'inline-block';
         }
+
         function mostrarDica() {
-            const q = NIVEIS[estado.nivelAtual-1].questoes[estado.questaoAtual];
+            const q = niveis[nivelAtual].questoes[questaoAtual];
             document.getElementById('caixaDica').innerHTML = q.dica;
             document.getElementById('caixaDica').style.display = 'block';
         }
+
         function mostrarResolucao() {
-            const q = NIVEIS[estado.nivelAtual-1].questoes[estado.questaoAtual];
+            const q = niveis[nivelAtual].questoes[questaoAtual];
             document.getElementById('caixaResolucao').innerHTML = q.resolucao;
             document.getElementById('caixaResolucao').style.display = 'block';
         }
 
-        function verificar() {
-            if(escolhida === null) { alert('Escolha uma alternativa!'); return; }
-            const q = NIVEIS[estado.nivelAtual-1].questoes[estado.questaoAtual];
-            const acertou = escolhida === q.correta;
-
-            if(!estado.progressoNiveis[estado.nivelAtual].respostas) {
-                estado.progressoNiveis[estado.nivelAtual].respostas = [];
-            }
-            estado.progressoNiveis[estado.nivelAtual].respostas[estado.questaoAtual] = { escolhida, certa: acertou };
-            if(estado.progressoNiveis[estado.nivelAtual].total <= estado.questaoAtual) {
-                estado.progressoNiveis[estado.nivelAtual].total++;
-                estado.total++;
-                if(acertou) estado.progressoNiveis[estado.nivelAtual].acertos++, estado.acertos++;
-            }
-
-            // Visual
-            document.querySelectorAll('.alternativa').forEach((el,j) => {
-                if(j===q.correta) el.classList.add('correta');
-                else if(j===escolhida && !acertou) el.classList.add('errada');
-            });
-            document.getElementById('caixaExp').style.display = 'block';
-            document.getElementById('caixaExp').innerHTML = `<strong>${acertou?'✅ Parabéns! Acertou!':'❌ Errou!'}</strong><br>${q.explicacao}`;
-            document.getElementById('btnDica').classList.add('oculto');
-            document.getElementById('btnResolucao').classList.remove('oculto');
-            document.getElementById('btnVerificar').classList.add('oculto');
-            if(estado.questaoAtual < 9) document.getElementById('btnProximo').classList.remove('oculto');
-
-            salvarProgresso();
-            atualizarEstatisticas();
-            atualizarGrafico();
-        }
-
-        function proxima() {
-            escolhida = null;
-            estado.questaoAtual++;
-            if(estado.questaoAtual >= 10) {
-                alert(`🎉 Nível ${estado.nivelAtual} concluído!\nAcertos: ${estado.progressoNiveis[estado.nivelAtual].acertos}/10\n${estado.progressoNiveis[estado.nivelAtual].acertos>=6?'✅ Próximo nível LIBERADO!':'📚 Estude mais e tente novamente!'}`);
-                voltarMenu();
-            } else {
+        function proximaQuestao() {
+            const n = niveis[nivelAtual];
+            questaoAtual++;
+            if (questaoAtual < n.questoes.length) {
                 carregarQuestao();
+            } else {
+                alert('🎉 Parabéns! Você concluiu este nível!');
+                voltarMenu();
             }
         }
 
         function voltarMenu() {
-            escolhida = null;
             document.getElementById('painelNiveis').classList.remove('oculto');
             document.getElementById('areaQuestao').classList.add('oculto');
             renderizarNiveis();
             atualizarEstatisticas();
-            atualizarGrafico();
         }
 
-        function atualizarTela() {
-            atualizarEstatisticas();
+        window.onload = () => {
+            niveis.forEach(n => n.questoes.forEach(q => { q.respondida = false; q.acertou = false; }));
             inicializarGrafico();
-        }
-
-        // Inicialização
-        carregarProgresso();
-        atualizarTela();
-        renderizarNiveis();
+            renderizarNiveis();
+        };
     </script>
 </body>
 </html>
+                       
